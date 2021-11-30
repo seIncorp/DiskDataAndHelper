@@ -92,8 +92,6 @@ public:
                     wprintf(L"Atrribute: READ and WRITE\n");
                 break;
             }
-
-            // TODO: shrani v object
         }
         else
         {
@@ -192,7 +190,6 @@ public:
                 case PARTITION_STYLE_MBR:
                     wprintf(L"PartitionStyle: PARTITION_STYLE_MBR\n");
 
-                    // TODO: dokoncaj
                 break;
 
                 case PARTITION_STYLE_GPT:
@@ -215,13 +212,12 @@ public:
                         dlig.DiskId.Data4[7]
                     );
                     wprintf(L"StartingUsableOffset (in Bytes): %ull\n", dlig.StartingUsableOffset);
-                    //double bbbbb = (double)(dlig.UsableLength.QuadPart) / (1024 * 1024 * 1024);
-                    // TODO: dodaj se za v GB podatke
+
                     wprintf(L"UsableLength (in Bytes): %I64d\n", dlig.UsableLength.QuadPart);
                     wprintf(L"MaxPartitionCount: %ull\n", dlig.MaxPartitionCount);
 
                     /******************************************************/
-                    // TODO: dodaj loop ce je number of partition > 1
+                    
                     PARTITION_INFORMATION_EX pix = pdg.PartitionEntry[0];
                     wprintf(L"PARTITON: \n");
                     switch (pix.PartitionStyle)
@@ -253,12 +249,11 @@ public:
                 case PARTITION_STYLE_RAW:
                     wprintf(L"PartitionStyle: PARTITION_STYLE_RAW\n");
 
-                    // TODO: dokoncaj
+                    
                 break;
             }
             
 
-            // TODO: shrani v object
 
 
 
@@ -278,7 +273,6 @@ public:
 
         // IMPORTANT: for this you must use C:, D:, ... instead PhysicalDrive0,...
 
-        // TODO: raje posebej naredi z oznako diska, da ostali ukazi gredo preko PhysicalDrive
 
         bResult = DeviceIoControl(hDevice, // device to be queried
             IOCTL_DISK_PERFORMANCE, // operation to perform
