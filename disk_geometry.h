@@ -232,6 +232,7 @@ public:
                 {
                     PARTITION_INFORMATION_GPT temp_GPT = bla.Gpt;
 
+                    // TODO: please beside this code show also text
                     wprintf(L"\t\tPartition Type: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n",
                         temp_GPT.PartitionType.Data1,
                         temp_GPT.PartitionType.Data2,
@@ -261,7 +262,8 @@ public:
                     );
 
                     wprintf(L"\t\tAttributes: %llu\n", temp_GPT.Attributes);
-                    wprintf(L"\t\tName: %S\n", temp_GPT.Name);
+
+                    wprintf(L"\t\tName: %s\n", temp_GPT.Name);
                 }
                 else
                 {
