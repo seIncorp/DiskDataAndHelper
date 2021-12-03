@@ -1,6 +1,0 @@
-﻿  disk_geometry.cpp
-C:\Users\simon\source\repos\DiskDataAndHelper\DiskDataAndHelper\disk_geometry.h(217,29): warning C4477: 'wprintf' : format string '%u' requires an argument of type 'unsigned int', but variadic argument 1 has type 'LARGE_INTEGER'
-  main.cpp
-C:\Users\simon\source\repos\DiskDataAndHelper\DiskDataAndHelper\disk_geometry.h(217,29): warning C4477: 'wprintf' : format string '%u' requires an argument of type 'unsigned int', but variadic argument 1 has type 'LARGE_INTEGER'
-  Generating Code...
-  DiskDataAndHelper.vcxproj -> C:\Users\simon\source\repos\DiskDataAndHelper\Debug\DiskDataAndHelper.exe
