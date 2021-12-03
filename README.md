@@ -3,6 +3,8 @@ To get all data about Hard driver and more...
 
 With this app, you can see all about used hard drivers also hidden data that Windows does not show. 
 
+**__Currently this app is for Windows__**
+
 ## CMD parameters
 
 -H  = this is for printing help
@@ -36,4 +38,5 @@ With this app, you can see all about used hard drivers also hidden data that Win
 ## TODOs
 - GUI
 - Additional data about Hard drives
-- ...
+- for Linux
+- for Mac
