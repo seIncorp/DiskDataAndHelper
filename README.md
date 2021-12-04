@@ -38,5 +38,7 @@ With this app, you can see all about used hard drivers also hidden data that Win
 ## TODOs
 - GUI
 - Additional data about Hard drives
+- DCO
+- HPA
 - for Linux
 - for Mac
