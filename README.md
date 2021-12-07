@@ -35,6 +35,9 @@ With this app, you can see all about used hard drivers also hidden data that Win
 -realD
 > with this you will get real disk (it is uesd only for logical disk)
 
+-predFailure
+> this command return all S.M.A.R.T data from HDD
+
 ## TODOs
 - GUI
 - Additional data about Hard drives
