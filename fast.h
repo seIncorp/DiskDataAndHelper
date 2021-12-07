@@ -23,6 +23,7 @@
 #define l   std::clog
 #define e   std::endl
 #define ee  (o << e)
+#define hex	std::hex
 
 
 #define string std::string

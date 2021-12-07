@@ -13,9 +13,13 @@ int wmain(int argc, wchar_t* argv[])
 {
 	/*
 		TODO:
-		
+
+
 		IOCTL:
 		- FSCTL_GET_VOLUME_BITMAP
+
+
+
 	*/
 
 	parsingCommands(argc, argv);
@@ -56,13 +60,23 @@ void helpFunction()
 {
 	wprintf(L"\n******************************************\n");
 	wprintf(L"Commands:\n");
+	wprintf(L"\t -H or -h \t= for showing help\n");
 	wprintf(L"\t -Dp [name] \t= is used for physical disk\n");
 	wprintf(L"\t -Dl [name] \t= is used for logical disk (partition)\n");
 	wprintf(L"\t -All \t\t= is used for listing of all logical disks (partitions)\n");
+	wprintf(L"\t -att \t\t= with this you will get disk attributes\n");
+	wprintf(L"\t -geo \t\t= with this you will get Drive geometry\n");
+	wprintf(L"\t -lay \t\t= with this you will get Drive layout\n");
+	wprintf(L"\t -perf \t\t= with this you will get Disk performance\n");
+	wprintf(L"\t -realD \t\t= with this you will get real disk (it is uesd only for logical disk)\n");
+	wprintf(L"\t -volInf \t\t= Volume information (it is uesd only for logical disk)\n");
+
+
 	wprintf(L"\n\n");
 	wprintf(L"Examples:\n");
 	wprintf(L"-Dp \\\\.\\PhysicalDrive0\n");
 	wprintf(L"-Dl C\n");
+	wprintf(L"-Dl C -att -geo -lay -perf -realD -volInf\n");
 	wprintf(L"\n******************************************\n");
 	wprintf(L"");
 	wprintf(L"");
@@ -125,9 +139,11 @@ void parsingCommands(int argc, wchar_t* argv[])
 			flags.perf_flag = 1;
 		}
 		
-		// GetDiskPerformanceOFF
-		
-		
+		// GetVolumeInf
+		if (std::wstring(argv[aa]) == L"-volInf")
+		{
+			flags.volInf_flag = 1;
+		}
 
 		// GetVolumeRealDisk <<-- only when drive name is used for C:, ...
 		if (std::wstring(argv[aa]) == L"-realD")
@@ -135,6 +151,11 @@ void parsingCommands(int argc, wchar_t* argv[])
 			flags.realD_flag = 1;
 		}
 
+		// GetSTORAGE_PREDICT_FAILURE
+		if (std::wstring(argv[aa]) == L"-predFailure")
+		{
+			flags.predFailure_flag = 1;
+		}
 	}
 }
 
@@ -190,6 +211,20 @@ void usingCommands()
 				ee;
 			}
 
+			if (flags.Dl_flag == 1 && flags.volInf_flag == 1)
+			{
+				wprintf(L"**Volume Information:\n");
+				only_one->GetVolumeInf();
+				ee;
+			}
+
+			if (flags.predFailure_flag == 1)
+			{
+				wprintf(L"**Predict failure:\n");
+				only_one->GetSTORAGE_PREDICT_FAILURE();
+				ee;
+			}
+
 			if (flags.perf_flag == 1)
 			{
 				wprintf(L"**Performance:\n");
@@ -205,29 +240,36 @@ void usingCommands()
 
 				if (flags.geo_flag == 1)
 				{
-					wprintf(L"**Geometry:\n", all[ii]->drive_path);
+					wprintf(L"**Geometry:\n");
 					all[ii]->GetDriveGeometry();
 					ee;
 				}
 
 				if (flags.att_flag == 1)
 				{
-					wprintf(L"**Attributes:\n", all[ii]->drive_path);
+					wprintf(L"**Attributes:\n");
 					all[ii]->GetDiskAttributes();
 					ee;
 				}
 
 				if (flags.lay_flag == 1)
 				{
-					wprintf(L"**Layout:\n", all[ii]->drive_path);
+					wprintf(L"**Layout:\n");
 					all[ii]->GetDriveLayoutEx();
 					ee;
 				}
 
 				if (flags.realD_flag == 1)
 				{
-					wprintf(L"**Real disk:\n", all[ii]->drive_path);
+					wprintf(L"**Real disk:\n");
 					all[ii]->GetVolumeRealDisk();
+					ee;
+				}
+
+				if (flags.predFailure_flag == 1)
+				{
+					wprintf(L"**Predict failure:\n");
+					all[ii]->GetSTORAGE_PREDICT_FAILURE();
 					ee;
 				}
 
