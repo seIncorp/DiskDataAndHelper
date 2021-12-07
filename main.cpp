@@ -70,6 +70,7 @@ void helpFunction()
 	wprintf(L"\t -perf \t\t= with this you will get Disk performance\n");
 	wprintf(L"\t -realD \t\t= with this you will get real disk (it is uesd only for logical disk)\n");
 	wprintf(L"\t -volInf \t\t= Volume information (it is uesd only for logical disk)\n");
+	wprintf(L"\t -predFailure \t\t= to get all data of S.M.A.R.T function\n");
 
 
 	wprintf(L"\n\n");
