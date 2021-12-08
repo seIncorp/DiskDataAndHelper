@@ -43,5 +43,6 @@ With this app, you can see all about used hard drivers also hidden data that Win
 - Additional data about Hard drives
 - DCO
 - HPA
+- cloning HDD
 - for Linux
 - for Mac
