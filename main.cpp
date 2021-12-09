@@ -71,6 +71,7 @@ void helpFunction()
 	wprintf(L"\t -realD \t\t= with this you will get real disk (it is uesd only for logical disk)\n");
 	wprintf(L"\t -volInf \t\t= Volume information (it is uesd only for logical disk)\n");
 	wprintf(L"\t -predFailure \t\t= to get all data of S.M.A.R.T function\n");
+	wprintf(L"\t -DCO \t\t= to get all Device Configuration Overlay (DCO) data from specific HDD\n");
 
 
 	wprintf(L"\n\n");
