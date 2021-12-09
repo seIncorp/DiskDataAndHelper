@@ -38,6 +38,10 @@ With this app, you can see all about used hard drivers also hidden data that Win
 -predFailure
 > this command return all S.M.A.R.T data from HDD
 
+-DCO
+> to get all Device Configuration Overlay (DCO) data from specific HDD
+
+
 ## TODOs
 - GUI
 - Additional data about Hard drives
