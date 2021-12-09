@@ -45,9 +45,9 @@ With this app, you can see all about used hard drivers also hidden data that Win
 ## TODOs
 - GUI
 - Additional data about Hard drives
-- DCO
 - HPA
 - cloning HDD
 - Free-fall Control feature if HDD support
+- IDENTIFY HDD DEVICE data (retriving all possible data about specific HDD)
 - for Linux
 - for Mac
