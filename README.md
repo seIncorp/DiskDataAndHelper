@@ -44,5 +44,6 @@ With this app, you can see all about used hard drivers also hidden data that Win
 - DCO
 - HPA
 - cloning HDD
+- Free-fall Control feature if HDD support
 - for Linux
 - for Mac
