@@ -2,6 +2,8 @@
 
 #define MAX_ATTRIBUTE 30
 
+
+
 typedef struct    //smart attribute
 {
     BYTE    Id;
@@ -81,12 +83,13 @@ public:
     {
         hDevice = CreateFileW(drive_path,          // drive to open
             
-            0,                // no access to the drive
-            //GENERIC_READ | GENERIC_WRITE,                // no access to the drive
+            //0,                // no access to the drive
+            GENERIC_READ | GENERIC_WRITE,                // no access to the drive
 
 
-            FILE_SHARE_READ | // share mode
-            FILE_SHARE_WRITE,
+            FILE_SHARE_READ | FILE_SHARE_WRITE,// share mode
+            //FILE_SHARE_READ ,// share mode
+            
             NULL,             // default security attributes
             OPEN_EXISTING,    // disposition
             0,                // file attributes
@@ -97,6 +100,15 @@ public:
             printError(GetLastError(), L"CreateFileW");
         }
     }
+
+
+
+
+
+
+
+
+
 
     void endDevice()
     {
@@ -477,6 +489,156 @@ public:
     }
 
     
+    void GetATACommandResponse_DCO_data()
+    {
+        BOOL bResult = FALSE;
+        DWORD junk = 0;
+
+        const unsigned int IDENTIFY_buffer_size = 512;
+
+        unsigned char Buffer[IDENTIFY_buffer_size + sizeof(ATA_PASS_THROUGH_EX)] = { 0 };
+        ATA_PASS_THROUGH_EX& PTE = *(ATA_PASS_THROUGH_EX*)Buffer;
+        PTE.Length = sizeof(PTE);
+        PTE.TimeOutValue = 10;
+        PTE.DataTransferLength = 512;
+        PTE.DataBufferOffset = sizeof(ATA_PASS_THROUGH_EX);
+
+        IDEREGS* ir = (IDEREGS*)PTE.CurrentTaskFile;
+        ir->bFeaturesReg = 0xC2;
+        ir->bCommandReg = 0xB1;
+        ir->bDriveHeadReg = 1;
+
+        // IDENTIFY is neither 48-bit nor DMA, it reads from the device:
+        PTE.AtaFlags = ATA_FLAGS_DATA_IN | ATA_FLAGS_DRDY_REQUIRED;
+
+        DWORD BR = 0;
+        bResult = DeviceIoControl(hDevice, IOCTL_ATA_PASS_THROUGH, &PTE, sizeof(Buffer), &PTE, sizeof(Buffer), &BR, 0);
+
+        if (bResult)
+        {
+            wprintf(L"RETURNED STATUS: \n");
+            wprintf(L"ERROR: 0x%02X\n", PTE.CurrentTaskFile[0]);    // TODO: prikazi kateri error je glede na bit-e
+            wprintf(L"STATUS: 0x%02X\n", PTE.CurrentTaskFile[6]);
+            wprintf(L"\tBSY: %s\n", (((PTE.CurrentTaskFile[6]) >> 3) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tDRDY: %s\n", (((PTE.CurrentTaskFile[6]) >> 6) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tDRQ: %s\n", (((PTE.CurrentTaskFile[6]) >> 7) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tERR: %s\n", (((PTE.CurrentTaskFile[6]) >> 0) & 1) == 1 ? L"TRUE [some error happened]" : L"FALSE [no error]");
+            wprintf(L"\n");
+            wprintf(L"\n");
+            wprintf(L"\n");
+
+            wprintf(L"*****  DATA  *****\n");
+            
+            WORD* data = (WORD*)(Buffer + sizeof(ATA_PASS_THROUGH_EX));
+
+            // Word 0
+            wprintf(L"Data structure revision: 0x%X\n", *(data + 0));
+            wprintf(L"\n");
+
+            // Word 1
+            wprintf(L"Multiword DMA modes supported: 0x%X\n", *(data + 1));
+            wprintf(L"\tReporting support for Multiword DMA mode 2 and below: %s\n", (((*(data + 1)) >> 2) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Multiword DMA mode 1 and below: %s\n", (((*(data + 1)) >> 1) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\t Reporting support for Multiword DMA mode 0: %s\n", (((*(data + 1)) >> 0) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\n");
+
+            // Word 2
+            wprintf(L"Ultra DMA modes supported: 0x%X\n", *(data + 2));
+            wprintf(L"\tReporting support for Ultra DMA mode 6 and below: %s\n", (((*(data + 2)) >> 6) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Ultra DMA mode 5 and below: %s\n", (((*(data + 2)) >> 5) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Ultra DMA mode 4 and below: %s\n", (((*(data + 2)) >> 4) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Ultra DMA mode 3 and below: %s\n", (((*(data + 2)) >> 3) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Ultra DMA mode 2 and below: %s\n", (((*(data + 2)) >> 2) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Ultra DMA mode 1 and below: %s\n", (((*(data + 2)) >> 1) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Ultra DMA mode 0: %s\n", (((*(data + 2)) >> 0) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\n");
+
+
+            // Word 3-6
+            typedef struct
+            {
+                USHORT ll[4];
+            }LBA;
+            LBA* lba = (LBA*)(data + 3);
+            wprintf(L"Maximum LBA: 0x%X%X%X%X\n", lba->ll[0], lba->ll[1], lba->ll[2], lba->ll[3]);
+            wprintf(L"\n");
+
+            // Word 7
+            wprintf(L"Command set/feature set supported: 0x%X - 0x%X - 0x%X\n", *(data + 7), *(data + 8), *(data + 21));
+            wprintf(L"\tPART 1:\n");
+            wprintf(L"\tReporting support for Write-Read-Verify feature: %s\n", (((*(data + 7)) >> 14) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for SMART Conveyance self-test: %s\n", (((*(data + 7)) >> 13) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for SMART Selective self-test: %s\n", (((*(data + 7)) >> 12) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Forced Unit Access: %s\n", (((*(data + 7)) >> 11) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Streaming feature: %s\n", (((*(data + 7)) >> 9) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for 48-bit Addressing feature: %s\n", (((*(data + 7)) >> 8) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Host Protected Area feature: %s\n", (((*(data + 7)) >> 7) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Automatic acoustic management: %s\n", (((*(data + 7)) >> 6) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for READ/WRITE DMA QUEUED commands: %s\n", (((*(data + 7)) >> 5) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Power-up in Standby feature: %s\n", (((*(data + 7)) >> 4) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Security feature: %s\n", (((*(data + 7)) >> 3) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for SMART error log: %s\n", (((*(data + 7)) >> 2) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for SMART self-test: %s\n", (((*(data + 7)) >> 1) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for SMART feature: %s\n", (((*(data + 7)) >> 0) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tPART 2:\n");
+            wprintf(L"\tReporting support for software settings preservation: %s\n", (((*(data + 8)) >> 4) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for asynchronous notification: %s\n", (((*(data + 8)) >> 3) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for interface power management: %s\n", (((*(data + 8)) >> 2) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for non-zero buffer offsets: %s\n", (((*(data + 8)) >> 1) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for the NCQ feature: %s\n", (((*(data + 8)) >> 0) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tPART 3:\n");
+            wprintf(L"\tReporting support for NV Cache feature: %s\n", (((*(data + 21)) >> 15) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for NV Cache Power Management feature: %s\n", (((*(data + 21)) >> 14) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for WRITE UNCORRECTABLE: %s\n", (((*(data + 21)) >> 13) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting of support for the Trusted Computing feature: %s\n", (((*(data + 21)) >> 12) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for the Free-fall Control feature: %s\n", (((*(data + 21)) >> 11) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\n");
+
+            // Word 208-254
+            typedef struct
+            {
+                USHORT ll[47];
+                
+            }VENDOR_SPECIFIC;
+            VENDOR_SPECIFIC* vs = (VENDOR_SPECIFIC*)(data + 208);
+            wprintf(L"Vendor Specific: \n");
+            for(int aa = 0; aa < 47; aa++)
+                wprintf(L"%X ",vs->ll[aa]);
+            wprintf(L"\n");
+            wprintf(L"\n");
+
+            // Word 255
+            wprintf(L"Integrity: 0x%X\n", *(data + 255));
+            int temp_i = *(data + 255);
+            for (int aa = 8; aa < 16; aa++)
+                temp_i = ((temp_i) & (~(1 << aa)));
+            wprintf(L"\tSignature: 0x%X\n", temp_i);
+            int temp_ii = *(data + 255);
+            for (int aa = 0; aa < 4; aa++)
+                temp_ii = ((temp_ii) & (~(1 << aa)));
+            temp_ii = temp_ii >> 8;
+            wprintf(L"\tChecksum: 0x%X\n", temp_ii);
+        }
+        else
+        {
+            printError(GetLastError(), L"GetATACommandResponse_DCO_data");
+        }
+
+    }
+
+    void GetATACommandResponse_IDENTIFY_DEVICE_data()
+    {
+        
+    }
+
+    
+
+
+
+
+
+
+
     
 
     void GetVolumeInf()
@@ -1155,12 +1317,24 @@ private:
                 swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_INVALID_HANDLE].\n", fun, err_id);
             break;
 
+            case 8:
+                swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_NOT_ENOUGH_MEMORY].\n", fun, err_id);
+            break;
+
             case 31:
                 swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_GEN_FAILURE]. (A device attached to the system is not functioning.)\n", fun, err_id);
             break;
 
+            case 50:
+                swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_NOT_SUPPORTED].\n", fun, err_id);
+            break;
+
             case 53:
                 swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_BAD_NETPATH].\n", fun, err_id);
+            break;
+
+            case 87:
+                swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_INVALID_PARAMETER].\n", fun, err_id);
             break;
 
             case 122:
@@ -1175,7 +1349,23 @@ private:
         wprintf(L"%s\n", temp_string);
     }
 
+    static void swapbytes(char* out, char* in, size_t n)
+    {
+        for (size_t iii = 0; iii < n; iii += 2) {
+            out[iii] = in[iii + 1];
+            out[iii + 1] = in[iii];
+        }
+    }
 
+    void ata_format_id_string(char* out, const unsigned char* in, int n)
+    {
+        bool must_swap = true;
+        char tmp[65];
+        n = n > 64 ? 64 : n;
+
+        swapbytes(out, (char*)in, n);
+        out[n] = '\0';
+    }
 
 
 

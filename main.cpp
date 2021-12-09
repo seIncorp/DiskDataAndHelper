@@ -157,6 +157,18 @@ void parsingCommands(int argc, wchar_t* argv[])
 		{
 			flags.predFailure_flag = 1;
 		}
+
+		// GetATACommandResponse_IDENTIFY_DEVICE_data
+		if(std::wstring(argv[aa]) == L"-ATA_IDD")
+		{
+			flags.ATA_IDD_flag = 1;
+		}
+
+		// GetATACommandResponse_DCO_data
+		if (std::wstring(argv[aa]) == L"-DCO")
+		{
+			flags.DCO_flag = 1;
+		}
 	}
 }
 
@@ -187,6 +199,19 @@ void usingCommands()
 			{
 				wprintf(L"**Geometry:\n");
 				only_one->GetDriveGeometry();
+
+
+
+				/*wprintf(L"**GetSTORAGE_PREDICT_FAILURE:\n");
+				only_one->GetSTORAGE_PREDICT_FAILURE();*/
+
+				/*wprintf(L"**GetATACommandResponse:\n");
+				only_one->GetATACommandResponse();*/
+
+
+				
+
+
 
 				ee;
 			}
@@ -230,6 +255,22 @@ void usingCommands()
 			{
 				wprintf(L"**Performance:\n");
 				only_one->GetDiskPerformance();
+				ee;
+			}
+
+			if (flags.ATA_IDD_flag == 1)
+			{
+				wprintf(L"**GetATACommandResponse_IDENTIFY_DEVICE_data:\n");
+				only_one->GetATACommandResponse_IDENTIFY_DEVICE_data();
+
+				ee;
+			}
+
+			if (flags.DCO_flag == 1)
+			{
+				wprintf(L"**GetATACommandResponse_DCO_data:\n");
+				only_one->GetATACommandResponse_DCO_data();
+
 				ee;
 			}
 		}

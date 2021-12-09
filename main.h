@@ -11,6 +11,10 @@
 #include <fileapi.h>
 #include <ntddscsi.h>
 
+
+#include <sstream>
+
+
 #include <iostream>
 #include <comdef.h>
 #include <wbemidl.h>
@@ -58,6 +62,8 @@ typedef struct
 	int perf_flag;
 	int volInf_flag;
 	int predFailure_flag;
+	int ATA_IDD_flag;
+	int DCO_flag;
 
 } FLAGS;
 
