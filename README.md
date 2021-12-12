@@ -41,6 +41,28 @@ With this app, you can see all about used hard drivers also hidden data that Win
 -DCO
 > to get all Device Configuration Overlay (DCO) data from specific HDD
 
+## Examples:
+
+- Selecting all partitions (you get only letters of all partitions):
+
+```DiskDataAndHelper.exe -All```
+
+- Select physical disk for getting data from it:
+
+```DiskDataAndHelper.exe -Dp PhysicalDrive0```
+
+- Select logical partition:
+
+```DiskDataAndHelper.exe -Dl D```
+
+- To get all disk attributes:
+
+```DiskDataAndHelper.exe -Dp PhysicalDrive0 -att``` or ```DiskDataAndHelper.exe -Dl D -att``` (because D is on PhysicalDrive0 is the same result)
+
+- To get geometry disk:
+
+```DiskDataAndHelper.exe -Dp PhysicalDrive0 -geo``` or ```DiskDataAndHelper.exe -Dl D -geo``` (because D is on PhysicalDrive0 is the same result)
+
 
 ## TODOs
 - GUI
