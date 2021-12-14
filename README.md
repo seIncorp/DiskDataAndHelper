@@ -41,7 +41,7 @@ With this app, you can see all about used hard drivers also hidden data that Win
 -DCO
 > to get all Device Configuration Overlay (DCO) data from specific HDD direct from HDD without controler
 
--ATA_IDD
+-ATA_IDD (NOT finished yet!!)
 > to get all data of IDENTIFY device direct from HDD without controler
 
 -HPAdata
