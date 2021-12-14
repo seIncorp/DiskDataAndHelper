@@ -11,31 +11,12 @@ wchar_t temp_drive_path[30];
 
 int wmain(int argc, wchar_t* argv[])
 {
-	/*
-		TODO:
-
-
-		IOCTL:
-		- FSCTL_GET_VOLUME_BITMAP
-
-
-
-	*/
-
 	parsingCommands(argc, argv);
 
-	
 	usingCommands();
-	
-
-
-
-
-
-
 
 	// CLOSING HANDLE
-	if(flags.can_be_used_flag == 1)
+	if (flags.can_be_used_flag == 1)
 		if (flags.multiple_drives_flag == 1)
 			for (int ii = 0; ii < all.size(); ii++)
 			{
@@ -48,7 +29,7 @@ int wmain(int argc, wchar_t* argv[])
 		{
 			if (flags.perf_flag == 1)
 				only_one->GetDiskPerformanceOFF();
-			
+
 			only_one->endDevice();
 		}
 
@@ -72,9 +53,11 @@ void helpFunction()
 	wprintf(L"\t -volInf \t\t= Volume information (it is uesd only for logical disk)\n");
 	wprintf(L"\t -predFailure \t\t= to get all data of S.M.A.R.T function\n");
 	wprintf(L"\t -DCO \t\t= to get all Device Configuration Overlay (DCO) data from specific HDD\n");
+	wprintf(L"\t -ATA_IDD \t\t= to get all data of IDENTIFY device direct from HDD without controler\n");
+	wprintf(L"\t -HPAdata \t\t= to get HPA data direct from HDD without controler\n");
 
 
-	wprintf(L"\n\n");
+	/*wprintf(L"\n\n");
 	wprintf(L"Examples:\n");
 	wprintf(L"-Dp \\\\.\\PhysicalDrive0\n");
 	wprintf(L"-Dl C\n");
@@ -82,7 +65,7 @@ void helpFunction()
 	wprintf(L"\n******************************************\n");
 	wprintf(L"");
 	wprintf(L"");
-	wprintf(L"");
+	wprintf(L"");*/
 
 }
 
@@ -106,7 +89,7 @@ void parsingCommands(int argc, wchar_t* argv[])
 		if (std::wstring(argv[aa]) == L"-Dl")
 		{
 			// for logical disk
-			swprintf(temp_drive_path, 10, L"\\\\.\\%s:", argv[aa+1]);
+			swprintf(temp_drive_path, 10, L"\\\\.\\%s:", argv[aa + 1]);
 
 			flags.Dl_flag = 1;
 		}
@@ -128,19 +111,19 @@ void parsingCommands(int argc, wchar_t* argv[])
 		{
 			flags.geo_flag = 1;
 		}
-		 
+
 		// GetDriveLayoutEx
 		if (std::wstring(argv[aa]) == L"-lay")
 		{
 			flags.lay_flag = 1;
 		}
-		 
+
 		// GetDiskPerformance <-- turn on
 		if (std::wstring(argv[aa]) == L"-perf")
 		{
 			flags.perf_flag = 1;
 		}
-		
+
 		// GetVolumeInf
 		if (std::wstring(argv[aa]) == L"-volInf")
 		{
@@ -160,7 +143,7 @@ void parsingCommands(int argc, wchar_t* argv[])
 		}
 
 		// GetATACommandResponse_IDENTIFY_DEVICE_data
-		if(std::wstring(argv[aa]) == L"-ATA_IDD")
+		if (std::wstring(argv[aa]) == L"-ATA_IDD")
 		{
 			flags.ATA_IDD_flag = 1;
 		}
@@ -169,6 +152,12 @@ void parsingCommands(int argc, wchar_t* argv[])
 		if (std::wstring(argv[aa]) == L"-DCO")
 		{
 			flags.DCO_flag = 1;
+		}
+
+		// GetATACommandResponse_HPA_data
+		if (std::wstring(argv[aa]) == L"-HPAdata")
+		{
+			flags.HPA_data_flag = 1;
 		}
 	}
 }
@@ -200,19 +189,6 @@ void usingCommands()
 			{
 				wprintf(L"**Geometry:\n");
 				only_one->GetDriveGeometry();
-
-
-
-				/*wprintf(L"**GetSTORAGE_PREDICT_FAILURE:\n");
-				only_one->GetSTORAGE_PREDICT_FAILURE();*/
-
-				/*wprintf(L"**GetATACommandResponse:\n");
-				only_one->GetATACommandResponse();*/
-
-
-				
-
-
 
 				ee;
 			}
@@ -274,6 +250,14 @@ void usingCommands()
 
 				ee;
 			}
+
+			if (flags.HPA_data_flag == 1)
+			{
+				wprintf(L"**GetATACommandResponse_HPA_data:\n");
+				only_one->GetATACommandResponse_HPA_data();
+
+				ee;
+			}
 		}
 		else
 		{
@@ -322,6 +306,30 @@ void usingCommands()
 					all[ii]->GetDiskPerformance();
 					ee;
 				}
+
+				if (flags.ATA_IDD_flag == 1)
+				{
+					wprintf(L"**GetATACommandResponse_IDENTIFY_DEVICE_data:\n");
+					all[ii]->GetATACommandResponse_IDENTIFY_DEVICE_data();
+
+					ee;
+				}
+
+				if (flags.DCO_flag == 1)
+				{
+					wprintf(L"**GetATACommandResponse_DCO_data:\n");
+					all[ii]->GetATACommandResponse_DCO_data();
+
+					ee;
+				}
+
+				if (flags.HPA_data_flag == 1)
+				{
+					wprintf(L"**GetATACommandResponse_HPA_data:\n");
+					all[ii]->GetATACommandResponse_HPA_data();
+
+					ee;
+				}
 			}
 		}
 	}
@@ -338,7 +346,7 @@ void createDiskDrives()
 		int bit = (((tt) >> ii) & 1);
 		int cc = 0x41 + ii;
 		if (bit == 1)
-		list_partition.push_back(cc);
+			list_partition.push_back(cc);
 	}
 
 	for (int ii = 0; ii < list_partition.size(); ii++)

@@ -43,7 +43,7 @@ typedef struct
 class LOCAL_DISK_GEOMETRY
 {
 public:
-    
+
     wchar_t drive_path[30];
     ULONGLONG cylinders;
     ULONGLONG tracksPerCylinder;
@@ -55,13 +55,12 @@ public:
     double diskSize_giga;
     MEDIA_TYPE media_type;
     HANDLE hDevice;
-    
-    SMART_DATA smartData;
 
+    SMART_DATA smartData;
 
     LOCAL_DISK_GEOMETRY(const wchar_t drive_name[] = L"\\\\.\\PhysicalDrive0")
     {
-        wcscpy_s(drive_path,30, drive_name);
+        wcscpy_s(drive_path, 30, drive_name);
 
         cylinders = 0;
         tracksPerCylinder = 0;
@@ -78,18 +77,18 @@ public:
         smartData = { 0 };
     }
 
-    
+
     void startDevice()
     {
         hDevice = CreateFileW(drive_path,          // drive to open
-            
+
             //0,                // no access to the drive
             GENERIC_READ | GENERIC_WRITE,                // no access to the drive
 
 
             FILE_SHARE_READ | FILE_SHARE_WRITE,// share mode
             //FILE_SHARE_READ ,// share mode
-            
+
             NULL,             // default security attributes
             OPEN_EXISTING,    // disposition
             0,                // file attributes
@@ -112,7 +111,7 @@ public:
 
     void endDevice()
     {
-        if(CloseHandle(hDevice) == 0)
+        if (CloseHandle(hDevice) == 0)
             printError(GetLastError(), L"endDevice");
     }
 
@@ -134,16 +133,16 @@ public:
             wprintf(L"Version: %d\n", dci.Version);
             switch (dci.Attributes)
             {
-                case DISK_ATTRIBUTE_OFFLINE:
-                    wprintf(L"Atrribute: DISK_ATTRIBUTE_OFFLINE\n");
+            case DISK_ATTRIBUTE_OFFLINE:
+                wprintf(L"Atrribute: DISK_ATTRIBUTE_OFFLINE\n");
                 break;
 
-                case DISK_ATTRIBUTE_READ_ONLY:
-                    wprintf(L"Atrribute: DISK_ATTRIBUTE_READ_ONLY\n");
+            case DISK_ATTRIBUTE_READ_ONLY:
+                wprintf(L"Atrribute: DISK_ATTRIBUTE_READ_ONLY\n");
                 break;
 
-                case 0x0000000000000000:
-                    wprintf(L"Atrribute: READ and WRITE\n");
+            case 0x0000000000000000:
+                wprintf(L"Atrribute: READ and WRITE\n");
                 break;
             }
         }
@@ -196,7 +195,7 @@ public:
     {
         BOOL bResult = FALSE;
         DWORD junk = 0;
-        BYTE data[10000] { 0 };
+        BYTE data[10000]{ 0 };
 
         bResult = DeviceIoControl(hDevice, // device to be queried
             IOCTL_DISK_GET_DRIVE_LAYOUT_EX, // operation to perform
@@ -207,20 +206,20 @@ public:
 
         if (bResult)
         {
-            DRIVE_LAYOUT_INFORMATION_EX* test = (DRIVE_LAYOUT_INFORMATION_EX *)data;
+            DRIVE_LAYOUT_INFORMATION_EX* test = (DRIVE_LAYOUT_INFORMATION_EX*)data;
 
             switch (test->PartitionStyle)
             {
-                case PARTITION_STYLE_MBR:
-                    wprintf(L"Drive Style: PARTITION_STYLE_MBR\n");
+            case PARTITION_STYLE_MBR:
+                wprintf(L"Drive Style: PARTITION_STYLE_MBR\n");
                 break;
 
-                case PARTITION_STYLE_GPT:
-                    wprintf(L"Drive Style: PARTITION_STYLE_GPT\n");
+            case PARTITION_STYLE_GPT:
+                wprintf(L"Drive Style: PARTITION_STYLE_GPT\n");
                 break;
 
-                case PARTITION_STYLE_RAW:
-                    wprintf(L"Drive Style: PARTITION_STYLE_RAW\n");
+            case PARTITION_STYLE_RAW:
+                wprintf(L"Drive Style: PARTITION_STYLE_RAW\n");
                 break;
             }
 
@@ -230,7 +229,7 @@ public:
 
             for (int aa = 0; aa < test->PartitionCount; aa++)
             {
-                wprintf(L"\tPartition [%d]:\n",aa);
+                wprintf(L"\tPartition [%d]:\n", aa);
 
                 PARTITION_INFORMATION_EX bla = test->PartitionEntry[aa];
 
@@ -239,28 +238,28 @@ public:
                 int style_flag = 0;
                 switch (bla.PartitionStyle)
                 {
-                    case PARTITION_STYLE_MBR:
-                        wprintf(L"\t\tStyle: PARTITION_STYLE_MBR\n");
-                        style_flag = 0;
+                case PARTITION_STYLE_MBR:
+                    wprintf(L"\t\tStyle: PARTITION_STYLE_MBR\n");
+                    style_flag = 0;
                     break;
 
-                    case PARTITION_STYLE_GPT:
-                        wprintf(L"\t\tStyle: PARTITION_STYLE_GPT\n");
-                        style_flag = 1;
+                case PARTITION_STYLE_GPT:
+                    wprintf(L"\t\tStyle: PARTITION_STYLE_GPT\n");
+                    style_flag = 1;
                     break;
 
-                    case PARTITION_STYLE_RAW:
-                        wprintf(L"\t\tStyle: PARTITION_STYLE_RAW\n");
-                        style_flag = 2;
+                case PARTITION_STYLE_RAW:
+                    wprintf(L"\t\tStyle: PARTITION_STYLE_RAW\n");
+                    style_flag = 2;
                     break;
                 }
 
-                wprintf(L"\t\tStarting offset: %I64d\n",bla.StartingOffset.QuadPart);
+                wprintf(L"\t\tStarting offset: %I64d\n", bla.StartingOffset.QuadPart);
 
-                wprintf(L"\t\tLength: %I64d B  (%.2f GB)\n",bla.PartitionLength.QuadPart, calculateToGB(bla.PartitionLength.QuadPart));
-                wprintf(L"\t\tRewrite: %d\n",bla.RewritePartition);
-                wprintf(L"\t\tIsServicePartition: %d\n",bla.IsServicePartition);
-                
+                wprintf(L"\t\tLength: %I64d B  (%.2f GB)\n", bla.PartitionLength.QuadPart, calculateToGB(bla.PartitionLength.QuadPart));
+                wprintf(L"\t\tRewrite: %d\n", bla.RewritePartition);
+                wprintf(L"\t\tIsServicePartition: %d\n", bla.IsServicePartition);
+
                 if (style_flag == 0)
                 {
                     PARTITION_INFORMATION_MBR temp_MBR = bla.Mbr;
@@ -270,21 +269,21 @@ public:
                     wprintf(L"\t\tBoot Indicator: %d\n", temp_MBR.BootIndicator);
                     wprintf(L"\t\tRecognized Partition: %d\n", temp_MBR.RecognizedPartition);
                     wprintf(L"\t\tHidden Sectors: %d\n", temp_MBR.HiddenSectors);
-                    wprintf(L"\t\tPartition Id: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n", 
-                                temp_MBR.PartitionId.Data1,
-                                temp_MBR.PartitionId.Data2,
-                                temp_MBR.PartitionId.Data3,
-                                temp_MBR.PartitionId.Data4[0],
-                                temp_MBR.PartitionId.Data4[1],
-                                temp_MBR.PartitionId.Data4[2],
-                                temp_MBR.PartitionId.Data4[3],
-                                temp_MBR.PartitionId.Data4[4],
-                                temp_MBR.PartitionId.Data4[5],
-                                temp_MBR.PartitionId.Data4[6],
-                                temp_MBR.PartitionId.Data4[7]
-                            );
+                    wprintf(L"\t\tPartition Id: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n",
+                        temp_MBR.PartitionId.Data1,
+                        temp_MBR.PartitionId.Data2,
+                        temp_MBR.PartitionId.Data3,
+                        temp_MBR.PartitionId.Data4[0],
+                        temp_MBR.PartitionId.Data4[1],
+                        temp_MBR.PartitionId.Data4[2],
+                        temp_MBR.PartitionId.Data4[3],
+                        temp_MBR.PartitionId.Data4[4],
+                        temp_MBR.PartitionId.Data4[5],
+                        temp_MBR.PartitionId.Data4[6],
+                        temp_MBR.PartitionId.Data4[7]
+                    );
                 }
-                else if(style_flag == 1)
+                else if (style_flag == 1)
                 {
                     PARTITION_INFORMATION_GPT temp_GPT = bla.Gpt;
 
@@ -305,7 +304,7 @@ public:
 
                     if (IsEqualGUID(temp_GPT.PartitionType, PARTITION_BASIC_DATA_GUID) == 1)
                         wprintf(L" [PARTITION_BASIC_DATA]\n");
-                    else if(IsEqualGUID(temp_GPT.PartitionType, PARTITION_ENTRY_UNUSED_GUID) == 1)
+                    else if (IsEqualGUID(temp_GPT.PartitionType, PARTITION_ENTRY_UNUSED_GUID) == 1)
                         wprintf(L" [PARTITION_ENTRY_UNUSED]\n");
                     else if (IsEqualGUID(temp_GPT.PartitionType, PARTITION_SYSTEM_GUID) == 1)
                         wprintf(L" [PARTITION_SYSTEM]\n");
@@ -414,68 +413,68 @@ public:
         if (bResult)
         {
             smartData.PredictFailure = spf.PredictFailure;
-           
+
             for (int aa = 0, bb = 1; aa < 512; aa++, bb++)
             {
                 switch (aa)
                 {
-                    case 0:
-                        smartData.revisionNumber[0] = *(spf.VendorSpecific + aa);
-                        smartData.revisionNumber[1] = *(spf.VendorSpecific + aa + 1);
+                case 0:
+                    smartData.revisionNumber[0] = *(spf.VendorSpecific + aa);
+                    smartData.revisionNumber[1] = *(spf.VendorSpecific + aa + 1);
                     break;
 
-                    case 2:
-                        parseSMARTAttributes(&spf);
+                case 2:
+                    parseSMARTAttributes(&spf);
                     break;
 
-                    case 362:
-                        smartData.offlineDataCollectionStatus = *(spf.VendorSpecific + aa);
+                case 362:
+                    smartData.offlineDataCollectionStatus = *(spf.VendorSpecific + aa);
                     break;
 
-                    case 363:
-                        smartData.selfTestExecutionStatus = *(spf.VendorSpecific + aa);
+                case 363:
+                    smartData.selfTestExecutionStatus = *(spf.VendorSpecific + aa);
                     break;
 
-                    case 364:
-                        smartData.Total_time_in_seconds_to_complete_off_line_data_collection_activity[0] = *(spf.VendorSpecific + aa);
-                        smartData.Total_time_in_seconds_to_complete_off_line_data_collection_activity[1] = *(spf.VendorSpecific + aa + 1);
+                case 364:
+                    smartData.Total_time_in_seconds_to_complete_off_line_data_collection_activity[0] = *(spf.VendorSpecific + aa);
+                    smartData.Total_time_in_seconds_to_complete_off_line_data_collection_activity[1] = *(spf.VendorSpecific + aa + 1);
                     break;
 
-                    case 366:
-                        smartData.Reserved = *(spf.VendorSpecific + aa);
+                case 366:
+                    smartData.Reserved = *(spf.VendorSpecific + aa);
                     break;
 
-                    case 367:
-                        smartData.Offline_data_collection_capability = *(spf.VendorSpecific + aa);
+                case 367:
+                    smartData.Offline_data_collection_capability = *(spf.VendorSpecific + aa);
                     break;
 
-                    case 368:
-                        smartData.SMART_capability[0] = *(spf.VendorSpecific + aa);
-                        smartData.SMART_capability[1] = *(spf.VendorSpecific + aa + 1);
+                case 368:
+                    smartData.SMART_capability[0] = *(spf.VendorSpecific + aa);
+                    smartData.SMART_capability[1] = *(spf.VendorSpecific + aa + 1);
                     break;
 
-                    case 370:
-                        smartData.Error_logging_capability = *(spf.VendorSpecific + aa);
+                case 370:
+                    smartData.Error_logging_capability = *(spf.VendorSpecific + aa);
                     break;
 
-                    case 371:
-                        smartData.Self_test_Failure_Checkpoint = *(spf.VendorSpecific + aa);
+                case 371:
+                    smartData.Self_test_Failure_Checkpoint = *(spf.VendorSpecific + aa);
                     break;
 
-                    case 372:
-                        smartData.Short_self_test_routine_recommended_polling_time_minutes = *(spf.VendorSpecific + aa);
+                case 372:
+                    smartData.Short_self_test_routine_recommended_polling_time_minutes = *(spf.VendorSpecific + aa);
                     break;
 
-                    case 373:
-                        smartData.Extended_self_test_routine_recommended_polling_time_minutes = *(spf.VendorSpecific + aa);
+                case 373:
+                    smartData.Extended_self_test_routine_recommended_polling_time_minutes = *(spf.VendorSpecific + aa);
                     break;
 
-                    case 374:
-                        // currently IGNORED
+                case 374:
+                    // currently IGNORED
                     break;
 
-                    case 511:
-                        smartData.Data_tructure_Checksum = *(spf.VendorSpecific + aa);
+                case 511:
+                    smartData.Data_tructure_Checksum = *(spf.VendorSpecific + aa);
                     break;
                 }
             }
@@ -488,150 +487,402 @@ public:
         }
     }
 
-    
-    void GetATACommandResponse_DCO_data()
+
+
+
+
+
+
+    int ATACommandCall(WORD data[], BYTE* arr)
     {
         BOOL bResult = FALSE;
         DWORD junk = 0;
-
         const unsigned int IDENTIFY_buffer_size = 512;
 
-        unsigned char Buffer[IDENTIFY_buffer_size + sizeof(ATA_PASS_THROUGH_EX)] = { 0 };
-        ATA_PASS_THROUGH_EX& PTE = *(ATA_PASS_THROUGH_EX*)Buffer;
-        PTE.Length = sizeof(PTE);
-        PTE.TimeOutValue = 10;
-        PTE.DataTransferLength = 512;
-        PTE.DataBufferOffset = sizeof(ATA_PASS_THROUGH_EX);
-
-        IDEREGS* ir = (IDEREGS*)PTE.CurrentTaskFile;
-        ir->bFeaturesReg = 0xC2;
-        ir->bCommandReg = 0xB1;
-        ir->bDriveHeadReg = 1;
-
-        // IDENTIFY is neither 48-bit nor DMA, it reads from the device:
-        PTE.AtaFlags = ATA_FLAGS_DATA_IN | ATA_FLAGS_DRDY_REQUIRED;
-
-        DWORD BR = 0;
-        bResult = DeviceIoControl(hDevice, IOCTL_ATA_PASS_THROUGH, &PTE, sizeof(Buffer), &PTE, sizeof(Buffer), &BR, 0);
-
-        if (bResult)
+        switch (arr[6])
         {
-            wprintf(L"RETURNED STATUS: \n");
-            wprintf(L"ERROR: 0x%02X\n", PTE.CurrentTaskFile[0]);    // TODO: prikazi kateri error je glede na bit-e
-            wprintf(L"STATUS: 0x%02X\n", PTE.CurrentTaskFile[6]);
-            wprintf(L"\tBSY: %s\n", (((PTE.CurrentTaskFile[6]) >> 3) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tDRDY: %s\n", (((PTE.CurrentTaskFile[6]) >> 6) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tDRQ: %s\n", (((PTE.CurrentTaskFile[6]) >> 7) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tERR: %s\n", (((PTE.CurrentTaskFile[6]) >> 0) & 1) == 1 ? L"TRUE [some error happened]" : L"FALSE [no error]");
-            wprintf(L"\n");
-            wprintf(L"\n");
-            wprintf(L"\n");
+        case 0xEC:
 
+
+        case 0xB1:  // DCO CALL
+        {
+            unsigned char Buffer[IDENTIFY_buffer_size + sizeof(ATA_PASS_THROUGH_EX)] = { 0 };
+            ATA_PASS_THROUGH_EX& PTE = *(ATA_PASS_THROUGH_EX*)Buffer;
+            PTE.Length = sizeof(PTE);
+            PTE.TimeOutValue = 10;
+            PTE.DataTransferLength = 512;
+            PTE.DataBufferOffset = sizeof(ATA_PASS_THROUGH_EX);
+
+            PTE.CurrentTaskFile[0] = arr[0];
+            PTE.CurrentTaskFile[1] = arr[1];
+            PTE.CurrentTaskFile[2] = arr[2];
+            PTE.CurrentTaskFile[3] = arr[3];
+            PTE.CurrentTaskFile[4] = arr[4];
+            PTE.CurrentTaskFile[5] = arr[5];
+            PTE.CurrentTaskFile[6] = arr[6];
+            PTE.CurrentTaskFile[7] = arr[7];
+
+            PTE.AtaFlags = ATA_FLAGS_DATA_IN | ATA_FLAGS_DRDY_REQUIRED;
+
+            DWORD BR = 0;
+            bResult = DeviceIoControl(hDevice, IOCTL_ATA_PASS_THROUGH, &PTE, sizeof(Buffer), &PTE, sizeof(Buffer), &BR, 0);
+
+            if (bResult)
+            {
+                printResponseData(PTE.CurrentTaskFile, 0, (wchar_t*)L"asd");
+
+                for (int aa = 0; aa < 256; aa++)
+                    data[aa] = *((WORD*)(Buffer + sizeof(ATA_PASS_THROUGH_EX)) + aa);
+
+                return 0;
+            }
+            else
+            {
+                printError(GetLastError(), L"GetATACommandResponse_DCO_data");
+
+                return 1;
+            }
+        }
+        break;
+
+        case 0xF8:  // HPA - READ NATIVE MAX ADDRESS
+        {
+            const unsigned int IDENTIFY_buffer_size = 512;
+
+            unsigned char Buffer[10 + sizeof(ATA_PASS_THROUGH_EX)] = { 0 };
+            ATA_PASS_THROUGH_EX& PTE = *(ATA_PASS_THROUGH_EX*)Buffer;
+            PTE.Length = sizeof(PTE);
+            PTE.TimeOutValue = 10;
+            PTE.DataTransferLength = 10;
+            PTE.DataBufferOffset = sizeof(ATA_PASS_THROUGH_EX);
+
+            PTE.CurrentTaskFile[0] = arr[0];
+            PTE.CurrentTaskFile[1] = arr[1];
+            PTE.CurrentTaskFile[2] = arr[2];
+            PTE.CurrentTaskFile[3] = arr[3];
+            PTE.CurrentTaskFile[4] = arr[4];
+            PTE.CurrentTaskFile[5] = arr[5];
+            PTE.CurrentTaskFile[6] = arr[6];
+            PTE.CurrentTaskFile[7] = arr[7];
+
+            PTE.AtaFlags = ATA_FLAGS_DATA_IN | ATA_FLAGS_DRDY_REQUIRED;
+
+            DWORD BR = 0;
+            bResult = DeviceIoControl(hDevice, IOCTL_ATA_PASS_THROUGH, &PTE, sizeof(Buffer), &PTE, sizeof(Buffer), &BR, 0);
+
+            if (bResult)
+            {
+                printResponseData(PTE.CurrentTaskFile, 1, (wchar_t*)L"Max address");
+
+                return 0;
+            }
+            else
+            {
+                printError(GetLastError(), L"GetATACommandResponse_DCO_data");
+
+                return 1;
+            }
+        }
+        break;
+        }
+    }
+
+
+    void GetATACommandResponse_DCO_data()
+    {
+        ATA_COMMAND dco_get{ 0x00 };
+        dco_get.bFeaturesReg = 0xC2;
+        dco_get.bDriveHeadReg = 0x01;
+        dco_get.bCommandReg = 0xB1;
+
+        WORD data[256];
+        if (ATACommandCall(data, (BYTE*)&dco_get) == 0)
+        {
             wprintf(L"*****  DATA  *****\n");
-            
-            WORD* data = (WORD*)(Buffer + sizeof(ATA_PASS_THROUGH_EX));
 
-            // Word 0
-            wprintf(L"Data structure revision: 0x%X\n", *(data + 0));
+            DCO_DATA* dco_data = (DCO_DATA*)data;
+
+            wprintf(L"Data structure revision: 0x%X\n", dco_data->revision);
             wprintf(L"\n");
 
-            // Word 1
-            wprintf(L"Multiword DMA modes supported: 0x%X\n", *(data + 1));
-            wprintf(L"\tReporting support for Multiword DMA mode 2 and below: %s\n", (((*(data + 1)) >> 2) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for Multiword DMA mode 1 and below: %s\n", (((*(data + 1)) >> 1) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\t Reporting support for Multiword DMA mode 0: %s\n", (((*(data + 1)) >> 0) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"Multiword DMA modes supported: 0x%X\n", dco_data->Multiword_DMA_modes_supported);
+            wprintf(L"\tReporting support for Multiword DMA mode 2 and below: %s\n", dco_data->Multiword_DMA_modes_supported.a2 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Multiword DMA mode 1 and below: %s\n", dco_data->Multiword_DMA_modes_supported.a1 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Multiword DMA mode 0: %s\n", dco_data->Multiword_DMA_modes_supported.a0 == 1 ? L"TRUE" : L"FALSE");
             wprintf(L"\n");
 
-            // Word 2
-            wprintf(L"Ultra DMA modes supported: 0x%X\n", *(data + 2));
-            wprintf(L"\tReporting support for Ultra DMA mode 6 and below: %s\n", (((*(data + 2)) >> 6) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for Ultra DMA mode 5 and below: %s\n", (((*(data + 2)) >> 5) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for Ultra DMA mode 4 and below: %s\n", (((*(data + 2)) >> 4) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for Ultra DMA mode 3 and below: %s\n", (((*(data + 2)) >> 3) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for Ultra DMA mode 2 and below: %s\n", (((*(data + 2)) >> 2) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for Ultra DMA mode 1 and below: %s\n", (((*(data + 2)) >> 1) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for Ultra DMA mode 0: %s\n", (((*(data + 2)) >> 0) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"Ultra DMA modes supported: 0x%X\n", dco_data->Ultra_DMA_modes_supported);
+            wprintf(L"\tReporting support for Ultra DMA mode 6 and below: %s\n", dco_data->Ultra_DMA_modes_supported.a6 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Ultra DMA mode 5 and below: %s\n", dco_data->Ultra_DMA_modes_supported.a5 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Ultra DMA mode 4 and below: %s\n", dco_data->Ultra_DMA_modes_supported.a4 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Ultra DMA mode 3 and below: %s\n", dco_data->Ultra_DMA_modes_supported.a3 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Ultra DMA mode 2 and below: %s\n", dco_data->Ultra_DMA_modes_supported.a2 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Ultra DMA mode 1 and below: %s\n", dco_data->Ultra_DMA_modes_supported.a1 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Ultra DMA mode 0: %s\n", dco_data->Ultra_DMA_modes_supported.a0 == 1 ? L"TRUE" : L"FALSE");
             wprintf(L"\n");
 
-
-            // Word 3-6
-            typedef struct
-            {
-                USHORT ll[4];
-            }LBA;
-            LBA* lba = (LBA*)(data + 3);
-            wprintf(L"Maximum LBA: 0x%X%X%X%X\n", lba->ll[0], lba->ll[1], lba->ll[2], lba->ll[3]);
+            wprintf(L"Maximum LBA (highest address by the factory default): 0x%X%X%X%X\n", dco_data->Maximum_LBA[3], dco_data->Maximum_LBA[2], dco_data->Maximum_LBA[1], dco_data->Maximum_LBA[0]);
             wprintf(L"\n");
 
-            // Word 7
-            wprintf(L"Command set/feature set supported: 0x%X - 0x%X - 0x%X\n", *(data + 7), *(data + 8), *(data + 21));
+            wprintf(L"Command set/feature set supported: 0x%X - 0x%X - 0x%X\n", dco_data->Command_set_feature_set_supported_part1, dco_data->Serial_ATA_Comm_set_feature_set_supported_part2, dco_data->Command_set_feature_set_supported_part3);
             wprintf(L"\tPART 1:\n");
-            wprintf(L"\tReporting support for Write-Read-Verify feature: %s\n", (((*(data + 7)) >> 14) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for SMART Conveyance self-test: %s\n", (((*(data + 7)) >> 13) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for SMART Selective self-test: %s\n", (((*(data + 7)) >> 12) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for Forced Unit Access: %s\n", (((*(data + 7)) >> 11) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for Streaming feature: %s\n", (((*(data + 7)) >> 9) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for 48-bit Addressing feature: %s\n", (((*(data + 7)) >> 8) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for Host Protected Area feature: %s\n", (((*(data + 7)) >> 7) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for Automatic acoustic management: %s\n", (((*(data + 7)) >> 6) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for READ/WRITE DMA QUEUED commands: %s\n", (((*(data + 7)) >> 5) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for Power-up in Standby feature: %s\n", (((*(data + 7)) >> 4) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for Security feature: %s\n", (((*(data + 7)) >> 3) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for SMART error log: %s\n", (((*(data + 7)) >> 2) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for SMART self-test: %s\n", (((*(data + 7)) >> 1) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for SMART feature: %s\n", (((*(data + 7)) >> 0) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Write-Read-Verify feature: %s\n", dco_data->Command_set_feature_set_supported_part1.a14 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for SMART Conveyance self-test: %s\n", dco_data->Command_set_feature_set_supported_part1.a13 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for SMART Selective self-test: %s\n", dco_data->Command_set_feature_set_supported_part1.a12 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Forced Unit Access: %s\n", dco_data->Command_set_feature_set_supported_part1.a11 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Streaming feature: %s\n", dco_data->Command_set_feature_set_supported_part1.a9 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for 48-bit Addressing feature: %s\n", dco_data->Command_set_feature_set_supported_part1.a8 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Host Protected Area feature: %s\n", dco_data->Command_set_feature_set_supported_part1.a7 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Automatic acoustic management: %s\n", dco_data->Command_set_feature_set_supported_part1.a6 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for READ/WRITE DMA QUEUED commands: %s\n", dco_data->Command_set_feature_set_supported_part1.a5 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Power-up in Standby feature: %s\n", dco_data->Command_set_feature_set_supported_part1.a4 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for Security feature: %s\n", dco_data->Command_set_feature_set_supported_part1.a3 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for SMART error log: %s\n", dco_data->Command_set_feature_set_supported_part1.a2 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for SMART self-test: %s\n", dco_data->Command_set_feature_set_supported_part1.a1 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for SMART feature: %s\n", dco_data->Command_set_feature_set_supported_part1.a0 == 1 ? L"TRUE" : L"FALSE");
             wprintf(L"\tPART 2:\n");
-            wprintf(L"\tReporting support for software settings preservation: %s\n", (((*(data + 8)) >> 4) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for asynchronous notification: %s\n", (((*(data + 8)) >> 3) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for interface power management: %s\n", (((*(data + 8)) >> 2) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for non-zero buffer offsets: %s\n", (((*(data + 8)) >> 1) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for the NCQ feature: %s\n", (((*(data + 8)) >> 0) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for software settings preservation: %s\n", dco_data->Serial_ATA_Comm_set_feature_set_supported_part2.a4 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for asynchronous notification: %s\n", dco_data->Serial_ATA_Comm_set_feature_set_supported_part2.a3 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for interface power management: %s\n", dco_data->Serial_ATA_Comm_set_feature_set_supported_part2.a2 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for non-zero buffer offsets: %s\n", dco_data->Serial_ATA_Comm_set_feature_set_supported_part2.a1 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for the NCQ feature: %s\n", dco_data->Serial_ATA_Comm_set_feature_set_supported_part2.a0 == 1 ? L"TRUE" : L"FALSE");
             wprintf(L"\tPART 3:\n");
-            wprintf(L"\tReporting support for NV Cache feature: %s\n", (((*(data + 21)) >> 15) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for NV Cache Power Management feature: %s\n", (((*(data + 21)) >> 14) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for WRITE UNCORRECTABLE: %s\n", (((*(data + 21)) >> 13) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting of support for the Trusted Computing feature: %s\n", (((*(data + 21)) >> 12) & 1) == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tReporting support for the Free-fall Control feature: %s\n", (((*(data + 21)) >> 11) & 1) == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for NV Cache feature: %s\n", dco_data->Command_set_feature_set_supported_part3.a15 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for NV Cache Power Management feature: %s\n", dco_data->Command_set_feature_set_supported_part3.a14 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for WRITE UNCORRECTABLE: %s\n", dco_data->Command_set_feature_set_supported_part3.a13 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting of support for the Trusted Computing feature: %s\n", dco_data->Command_set_feature_set_supported_part3.a12 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tReporting support for the Free-fall Control feature: %s\n", dco_data->Command_set_feature_set_supported_part3.a11 == 1 ? L"TRUE" : L"FALSE");
             wprintf(L"\n");
 
-            // Word 208-254
-            typedef struct
-            {
-                USHORT ll[47];
-                
-            }VENDOR_SPECIFIC;
-            VENDOR_SPECIFIC* vs = (VENDOR_SPECIFIC*)(data + 208);
             wprintf(L"Vendor Specific: \n");
-            for(int aa = 0; aa < 47; aa++)
-                wprintf(L"%X ",vs->ll[aa]);
+            for (int aa = 0; aa < 47; aa++)
+                wprintf(L"0x%X ", dco_data->Vendor_Specific[aa]);
             wprintf(L"\n");
             wprintf(L"\n");
 
-            // Word 255
-            wprintf(L"Integrity: 0x%X\n", *(data + 255));
-            int temp_i = *(data + 255);
-            for (int aa = 8; aa < 16; aa++)
-                temp_i = ((temp_i) & (~(1 << aa)));
-            wprintf(L"\tSignature: 0x%X\n", temp_i);
-            int temp_ii = *(data + 255);
-            for (int aa = 0; aa < 4; aa++)
-                temp_ii = ((temp_ii) & (~(1 << aa)));
-            temp_ii = temp_ii >> 8;
-            wprintf(L"\tChecksum: 0x%X\n", temp_ii);
+            wprintf(L"Integrity: 0x%X\n", dco_data->Integrity_word);
+            wprintf(L"\tSignature: 0x%X\n", dco_data->Integrity_word.signature);
+            wprintf(L"\tChecksum: 0x%X\n", dco_data->Integrity_word.checksum);
         }
-        else
+    }
+
+    void GetATACommandResponse_HPA_data()
+    {
+        ATA_COMMAND hpa_get{ 0x00 };
+        hpa_get.bDriveHeadReg = 0x01;
+        hpa_get.bCommandReg = 0xF8;
+
+        WORD data[256];
+        if (ATACommandCall(data, (BYTE*)&hpa_get) == 0)
         {
-            printError(GetLastError(), L"GetATACommandResponse_DCO_data");
-        }
 
+        }
     }
 
     void GetATACommandResponse_IDENTIFY_DEVICE_data()
     {
-        
+        ATA_COMMAND id_get{ 0x00 };
+        id_get.bDriveHeadReg = 0x01;
+        id_get.bCommandReg = 0xEC;
+
+        WORD data[256];
+        if (ATACommandCall(data, (BYTE*)&id_get) == 0)
+        {
+            // TODO: add if statments for bits: shall be cleared to zero and shall be set to one
+            // TODO: add all validation for data
+
+            wprintf(L"*****  DATA  *****\n");
+
+            IDENTIFY_DEVICE_DATA* id_data = (IDENTIFY_DEVICE_DATA*)data;
+
+            char SerialNumber[21];
+            ata_format_id_string(SerialNumber, id_data->Serial_number, sizeof(SerialNumber) - 1);
+            wprintf(L"Serial number: %S\n", SerialNumber);
+
+            char FirmwareRevision[9];
+            ata_format_id_string(FirmwareRevision, id_data->Firmware_revision, sizeof(FirmwareRevision) - 1);
+            printf("Firmware Revision: %s\n", FirmwareRevision);
+
+            char ModelNumber[41];
+            ata_format_id_string(ModelNumber, id_data->Model_number, sizeof(ModelNumber) - 1);
+            printf("Model number: %s\n", ModelNumber);
+            wprintf(L"\n");
+
+            wprintf(L"General configuration: 0x%X  --> 0x%X\n", *(data + 0), id_data->General_configuration);
+            wprintf(L"\tResponse incomplete: %s\n", id_data->General_configuration.a2 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tATA device: %s\n", id_data->General_configuration.a15 == 0 ? L"TRUE" : L"FALSE");
+
+            wprintf(L"Specific configuration: 0x%X  --> 0x%X\n", *(data + 2), id_data->Specific_configuration);
+            switch (id_data->Specific_configuration)
+            {
+            case 0x37C8:
+                wprintf(L"\tDevice requires SET FEATURES subcommand to spin-up after power-up and IDENTIFY DEVICE data is incomplet\n");
+                break;
+
+            case 0x738C:
+                wprintf(L"\t Device requires SET FEATURES subcommand to spin-up after power-up and IDENTIFY DEVICE data is complete\n");
+                break;
+
+            case 0x8C73:
+                wprintf(L"\tDevice does not require SET FEATURES subcommand to spin-up after power - up and IDENTIFY DEVICE data is incomplete\n");
+                break;
+
+            case 0xC837:
+                wprintf(L"\tDevice does not require SET FEATURES subcommand to spin-up after power - up and IDENTIFY DEVICE data is complete\n");
+                break;
+            }
+            wprintf(L"\n");
+
+
+            wprintf(L"READ / WRITE MULTIPLE support: %X -->  %X [%lu]\n", *(data + 47), id_data->Mandatory_1, id_data->Mandatory_1.a1);
+            wprintf(L"\n");
+            wprintf(L"Trusted Computing feature: %X -->  %X [%s]\n", *(data + 48), id_data->Trusted_Computing_feature, id_data->Trusted_Computing_feature.a0 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\n");
+            wprintf(L"Capabilities: %X - %X -->  %X - %X\n", *(data + 49), *(data + 50), id_data->Capabilities_1, id_data->Capabilities_2);
+            wprintf(L"\tLong Physical Sector Alignment Error reporting: %d\n", id_data->Capabilities_1.a0);
+            wprintf(L"\tDMA supported: %s\n", id_data->Capabilities_1.a8 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tLBA supported: %s\n", id_data->Capabilities_1.a9 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tIORDY: %s\n", id_data->Capabilities_1.a10 == 1 ? L"may be disabled" : L"may NOT be disabled");
+            wprintf(L"\tIORDY: %s\n", id_data->Capabilities_1.a11 == 1 ? L"supported" : L"NOT supported");
+            wprintf(L"\t%s\n", id_data->Capabilities_1.a13 == 1 ? L"Standby timer values as specified in this standard are supported" : L"Standby timer values shall be managed by the device");
+            wprintf(L"\t%s\n", id_data->Capabilities_2.a0 == 1 ? L"There is a minimum Standby time value and it is vendor specific" : L"There is no minimum Standby timer value");
+
+            wprintf(L"\n");
+            wprintf(L"Free-fall Control Sensitivity: %X -->  %X\n", *(data + 53), id_data->Free_fall_Control);
+            wprintf(L"\n");
+            wprintf(L"Multiple_sector_setting: %X -->  %X\n", *(data + 59), id_data->Multiple_sector_setting);
+            if (id_data->Multiple_sector_setting.a8 == 1)
+            {
+                wprintf(L"\tnumber of logical sectors that shall be transferred per DRQ data block: %lu\n", id_data->Multiple_sector_setting.a0);
+            }
+            wprintf(L"\tSanitize antifreeze lock ext command: %s\n", id_data->Multiple_sector_setting.a10 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\t%s\n", id_data->Multiple_sector_setting.a11 == 1 ? L"The commands allowed during a sanitize operation are as specified by this standard" : L"The commands allowed during a sanitize operation are as specified by ACS - 2");
+            wprintf(L"\tSANITIZE SUPPORTED: %s\n", id_data->Multiple_sector_setting.a12 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tCRYPTO SCRAMBLE EXT command: %s\n", id_data->Multiple_sector_setting.a13 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tOVERWRITE EXT command: %s\n", id_data->Multiple_sector_setting.a14 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tBLOCK ERASE EXT command: %s\n", id_data->Multiple_sector_setting.a15 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\n");
+
+            wprintf(L"Total number of user addressable logical sectors (28-bit commands): 0x%04X%04X\n", id_data->Total_n_user_addr_log_sectors[1], id_data->Total_n_user_addr_log_sectors[0]);
+            wprintf(L"\n");
+
+            wprintf(L"Multiword DMA transfer: %X -->  %X\n", *(data + 63), id_data->Multiword_DMA_transfer);
+            wprintf(L"\tMultiword DMA mode 0: %s\n", id_data->Multiword_DMA_transfer.a0 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tMultiword DMA mode 1 and below: %s\n", id_data->Multiword_DMA_transfer.a1 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tMultiword DMA mode 2 and below: %s\n", id_data->Multiword_DMA_transfer.a2 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tMultiword DMA mode 0: %s\n", id_data->Multiword_DMA_transfer.a8 == 1 ? L"selected" : L"not selected");
+            wprintf(L"\tMultiword DMA mode 1: %s\n", id_data->Multiword_DMA_transfer.a9 == 1 ? L"selected" : L"not selected");
+            wprintf(L"\tMultiword DMA mode 2: %s\n", id_data->Multiword_DMA_transfer.a10 == 1 ? L"selected" : L"not selected");
+            wprintf(L"\n");
+
+            if (id_data->Free_fall_Control.a1 == 1)
+            {
+                wprintf(L"PIO transfer modes supported: %X -->  %X\n", *(data + 64), id_data->PIO_transfer_modes_supported);
+                wprintf(L"\tPIO mode 3 supported: %s\n", id_data->PIO_transfer_modes_supported.a0 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tPIO mode 4 supported: %s\n", id_data->PIO_transfer_modes_supported.a1 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\n");
+
+                wprintf(L"Minimum Multiword DMA transfer cycle time per word: %d -->  %d nanoseconds\n", *(data + 65), id_data->Min_Mult_DMA_trans_cycle_time_per_word);
+                wprintf(L"\n");
+
+                wprintf(L"Device recommended Multiword DMA cycle time: %d -->  %d nanoseconds\n", *(data + 66), id_data->Man_recomm_Multi_DMA_trans_cycle_time);
+                wprintf(L"\n");
+
+                wprintf(L"Minimum PIO transfer cycle time without IORDY flow control: %d -->  %d nanoseconds\n", *(data + 67), id_data->Min_PIO_trans_cycle_time_without_flow_con);
+                wprintf(L"\n");
+
+                wprintf(L"Minimum PIO transfer cycle time with IORDY flow control: %d -->  %d nanoseconds\n", *(data + 68), id_data->Min_PIO_trans_cycle_time_with_IORDY_flow_con);
+                wprintf(L"\n");
+            }
+
+            wprintf(L"Additional Supported: %X -->  %X\n", *(data + 69), id_data->Additional_Supported);
+            wprintf(L"\tAll write cache is non-volatile: %s\n", id_data->Additional_Supported.a2 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tExtended Number of User Addressable Sectors: %s\n", id_data->Additional_Supported.a3 == 1 ? L"supported" : L"NOT supported");
+            wprintf(L"\tDevice Encrypts All User Data on the device: %s\n", id_data->Additional_Supported.a4 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\t Trimmed LBA range(s) returning zeroed data: %s\n", id_data->Additional_Supported.a5 == 1 ? L"supported" : L"NOT supported");
+            wprintf(L"\tOptional ATA device 28-bit commands: %s\n", id_data->Additional_Supported.a6 == 1 ? L"NOT supported" : L"supported");
+            wprintf(L"\tDOWNLOAD MICROCODE DMA: %s\n", id_data->Additional_Supported.a8 == 1 ? L"supported" : L"NOT supported");
+            wprintf(L"\tWRITE BUFFER DMA: %s\n", id_data->Additional_Supported.a10 == 1 ? L"supported" : L"NOT supported");
+            wprintf(L"\tREAD BUFFER DMA: %s\n", id_data->Additional_Supported.a11 == 1 ? L"supported" : L"NOT supported");
+            wprintf(L"\tLong Physical Sector Alignment Error Reporting Control: %s\n", id_data->Additional_Supported.a13 == 1 ? L"supported" : L"NOT supported");
+            wprintf(L"\tDeterministic data in trimmed LBA range(s): %s\n", id_data->Additional_Supported.a14 == 1 ? L"supported" : L"NOT supported");
+            wprintf(L"\n");
+
+            // TODO: add if statment about showing it 
+            wprintf(L"Queue depth: %X -->  %X [%d]\n", *(data + 75), id_data->Queue_depth, id_data->Queue_depth);
+            wprintf(L"\n");
+
+            wprintf(L"Serial ATA Capabilities: %X -->  %X\n", *(data + 76), id_data->Serial_ATA_Capabilities);
+            wprintf(L"\tSupports SATA Gen1 Signaling Speed (1.5Gb/s): %s\n", id_data->Serial_ATA_Capabilities.a1 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSupports SATA Gen2 Signaling Speed (3.0Gb/s): %s\n", id_data->Serial_ATA_Capabilities.a2 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSupports SATA Gen3 Signaling Speed (6.0Gb/s): %s\n", id_data->Serial_ATA_Capabilities.a3 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSupports the NCQ feature set: %s\n", id_data->Serial_ATA_Capabilities.a8 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSupports receipt of host initiated power management requests: %s\n", id_data->Serial_ATA_Capabilities.a9 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\t Supports the SATA Phy Event Counters log: %s\n", id_data->Serial_ATA_Capabilities.a10 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSupports Unload while NCQ commands are outstanding: %s\n", id_data->Serial_ATA_Capabilities.a11 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSupports NCQ priority information: %s\n", id_data->Serial_ATA_Capabilities.a12 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSupports Host Automatic Partial to Slumber transitions: %s\n", id_data->Serial_ATA_Capabilities.a13 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSupports Device Automatic Partial to Slumber transitions: %s\n", id_data->Serial_ATA_Capabilities.a14 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSupports READ LOG DMA EXT: %s\n", id_data->Serial_ATA_Capabilities.a15 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\n");
+
+            wprintf(L"Serial ATA Additional Capabilities: %X -->  %X\n", *(data + 77), id_data->Serial_ATA_Additional_Capabilities);
+            wprintf(L"\tCURRENT SERIAL ATA SIGNAL SPEED: %d\n", id_data->Serial_ATA_Additional_Capabilities.a1);
+            wprintf(L"\tSupports NCQ Streaming: %s\n", id_data->Serial_ATA_Additional_Capabilities.a4 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSupports NCQ Queue Management Command: %s\n", id_data->Serial_ATA_Additional_Capabilities.a5 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSupports RECEIVE FPDMA QUEUED and SEND FPDMA QUEUED commands: %s\n", id_data->Serial_ATA_Additional_Capabilities.a6 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\n");
+
+            wprintf(L"Serial ATA features supported: %X -->  %X\n", *(data + 78), id_data->SATA_Features_Supported);
+            wprintf(L"\tDevice supports non-zero buffer offsets: %s\n", id_data->SATA_Features_Supported.a1 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tDevice supports DMA Setup auto-activation: %s\n", id_data->SATA_Features_Supported.a2 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tDevice supports initiating power management: %s\n", id_data->SATA_Features_Supported.a3 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tDevice supports in-order data delivery: %s\n", id_data->SATA_Features_Supported.a4 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tDevice supports Hardware Feature Control: %s\n", id_data->SATA_Features_Supported.a5 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tDevice supports Software Settings Preservation: %s\n", id_data->SATA_Features_Supported.a6 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tDevice supports NCQ Autosense: %s\n", id_data->SATA_Features_Supported.a7 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\n");
+
+            // TODO: continue
+
+            wprintf(L"\n");
+            wprintf(L"\n");
+            wprintf(L"\n");
+            wprintf(L"\n");
+            wprintf(L"\n");
+            wprintf(L"\n");
+            wprintf(L"\n");
+
+
+
+
+
+
+
+
+
+
+
+
+
+            wprintf(L"\n");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
     }
 
-    
 
 
 
@@ -639,7 +890,8 @@ public:
 
 
 
-    
+
+
 
     void GetVolumeInf()
     {
@@ -653,7 +905,7 @@ public:
         wchar_t temp_s[5];
         swprintf_s(temp_s, 5, L"%wc%wc", drive_path[4], drive_path[5]);
 
-        if(drive_path[4] == L'C')
+        if (drive_path[4] == L'C')
             tttt = GetVolumeInformationW(
                 NULL,
                 //(LPCWSTR)L"D:",
@@ -714,7 +966,7 @@ public:
 
         if (bResult)
         {
-            
+
         }
         else
         {
@@ -726,7 +978,7 @@ public:
     {
         BOOL bResult = FALSE;
         DWORD junk = 0;
-        VOLUME_DISK_EXTENTS data { 0 };
+        VOLUME_DISK_EXTENTS data{ 0 };
 
         bResult = DeviceIoControl(hDevice, // device to be queried
             IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, // operation to perform
@@ -740,7 +992,7 @@ public:
             wprintf(L"NumberOfDiskExtents: %d\n", data.NumberOfDiskExtents);
 
             // TODO: do for more than one disk (in case of more than 1 disk currently is to small buffer)
-            
+
             DISK_EXTENT temp_de = data.Extents[0];
 
             wprintf(L"\t DiskNumber: %d\n", temp_de.DiskNumber);
@@ -756,11 +1008,12 @@ public:
         }
     }
 
-    
+
 
 private:
 
-    void parseSMARTAttributes(STORAGE_PREDICT_FAILURE *spf)
+
+    void parseSMARTAttributes(STORAGE_PREDICT_FAILURE* spf)
     {
         for (int aa = 2, bb = 0, j = 0; aa < 362; aa++, bb++)
         {
@@ -769,37 +1022,37 @@ private:
                 bb = 0;
                 j++;
             }
-            
+
             switch (bb)
             {
-                case 0:
-                    smartData.Attribute[j].Id = *(spf->VendorSpecific + aa);
+            case 0:
+                smartData.Attribute[j].Id = *(spf->VendorSpecific + aa);
                 break;
 
-                case 1:
-                    smartData.Attribute[j].StatusFlags[0] = *(spf->VendorSpecific + aa);
-                    smartData.Attribute[j].StatusFlags[1] = *(spf->VendorSpecific + aa + 1);
+            case 1:
+                smartData.Attribute[j].StatusFlags[0] = *(spf->VendorSpecific + aa);
+                smartData.Attribute[j].StatusFlags[1] = *(spf->VendorSpecific + aa + 1);
                 break;
 
-                case 3:
-                    smartData.Attribute[j].AttributeValue = *(spf->VendorSpecific + aa);
+            case 3:
+                smartData.Attribute[j].AttributeValue = *(spf->VendorSpecific + aa);
                 break;
 
-                case 4:
-                    smartData.Attribute[j].WorstValue = *(spf->VendorSpecific + aa);
+            case 4:
+                smartData.Attribute[j].WorstValue = *(spf->VendorSpecific + aa);
                 break;
 
-                case 5:
-                    smartData.Attribute[j].RawValue[0] = *(spf->VendorSpecific + aa);
-                    smartData.Attribute[j].RawValue[1] = *(spf->VendorSpecific + aa + 1);
-                    smartData.Attribute[j].RawValue[2] = *(spf->VendorSpecific + aa + 2);
-                    smartData.Attribute[j].RawValue[3] = *(spf->VendorSpecific + aa + 3);
-                    smartData.Attribute[j].RawValue[4] = *(spf->VendorSpecific + aa + 4);
-                    smartData.Attribute[j].RawValue[5] = *(spf->VendorSpecific + aa + 5);
+            case 5:
+                smartData.Attribute[j].RawValue[0] = *(spf->VendorSpecific + aa);
+                smartData.Attribute[j].RawValue[1] = *(spf->VendorSpecific + aa + 1);
+                smartData.Attribute[j].RawValue[2] = *(spf->VendorSpecific + aa + 2);
+                smartData.Attribute[j].RawValue[3] = *(spf->VendorSpecific + aa + 3);
+                smartData.Attribute[j].RawValue[4] = *(spf->VendorSpecific + aa + 4);
+                smartData.Attribute[j].RawValue[5] = *(spf->VendorSpecific + aa + 5);
                 break;
 
-                case 11:
-                    smartData.Attribute[j].Reserved = *(spf->VendorSpecific + aa);
+            case 11:
+                smartData.Attribute[j].Reserved = *(spf->VendorSpecific + aa);
                 break;
             }
         }
@@ -807,14 +1060,14 @@ private:
 
     void printSMARTdata()
     {
-        if(smartData.PredictFailure != 0)
+        if (smartData.PredictFailure != 0)
             wprintf(L"device is currently predicting an imminent FAILURE!!!!!!!!!\n");
         else
             wprintf(L"NO failure is predicting!!\n");
 
         wprintf(L"\n");
 
-        wprintf(L"Revision number: %d\n",  
+        wprintf(L"Revision number: %d\n",
             smartData.revisionNumber[0]
         );
         wprintf(L"\n");
@@ -826,118 +1079,118 @@ private:
             {
                 switch (smartData.Attribute[aa].Id)
                 {
-                    case 1:
-                        wprintf(L"\tRead Error Rate:\n");
+                case 1:
+                    wprintf(L"\tRead Error Rate:\n");
                     break;
 
-                    case 2:
-                        wprintf(L"\tThroughput Performance:\n");
+                case 2:
+                    wprintf(L"\tThroughput Performance:\n");
                     break;
 
-                    case 3:
-                        wprintf(L"\tSpin Up Time:\n");
+                case 3:
+                    wprintf(L"\tSpin Up Time:\n");
                     break;
 
-                    case 4:
-                        wprintf(L"\tStart/Stop Count:\n");
+                case 4:
+                    wprintf(L"\tStart/Stop Count:\n");
                     break;
 
-                    case 5:
-                        wprintf(L"\tReallocated Sector Count:\n");
+                case 5:
+                    wprintf(L"\tReallocated Sector Count:\n");
                     break;
 
-                    case 7:
-                        wprintf(L"\tSeek Error Rate:\n");
+                case 7:
+                    wprintf(L"\tSeek Error Rate:\n");
                     break;
 
-                    case 8:
-                        wprintf(L"\tSeek Time Performance:\n");
+                case 8:
+                    wprintf(L"\tSeek Time Performance:\n");
                     break;
 
-                    case 9:
-                        wprintf(L"\tPower-On Hours Count:\n");
+                case 9:
+                    wprintf(L"\tPower-On Hours Count:\n");
                     break;
 
-                    case 10:
-                        wprintf(L"\tSpin Retry Count:\n");
+                case 10:
+                    wprintf(L"\tSpin Retry Count:\n");
                     break;
 
-                    case 12:
-                        wprintf(L"\tDevice Power Cycle Count:\n");
+                case 12:
+                    wprintf(L"\tDevice Power Cycle Count:\n");
                     break;
 
-                    case 160:
-                        wprintf(L"\tFree-fall Sensor Self Test Result:\n");
+                case 160:
+                    wprintf(L"\tFree-fall Sensor Self Test Result:\n");
                     break;
 
-                    case 191:
-                        wprintf(L"\tG Sense error rate:\n");
+                case 191:
+                    wprintf(L"\tG Sense error rate:\n");
                     break;
 
-                    case 192:
-                        wprintf(L"\tPower off retract count:\n");
+                case 192:
+                    wprintf(L"\tPower off retract count:\n");
                     break;
 
-                    case 193:
-                        wprintf(L"\tLoad/Unload cycle count:\n");
+                case 193:
+                    wprintf(L"\tLoad/Unload cycle count:\n");
                     break;
 
-                    case 194:
-                        wprintf(L"\tDevice Temperature:\n");
+                case 194:
+                    wprintf(L"\tDevice Temperature:\n");
                     break;
 
-                    case 196:
-                        wprintf(L"\tReallocation Sector Event Count:\n");
+                case 196:
+                    wprintf(L"\tReallocation Sector Event Count:\n");
                     break;
 
-                    case 197:
-                        wprintf(L"\tCurrent Pending Sector Count:\n");
+                case 197:
+                    wprintf(L"\tCurrent Pending Sector Count:\n");
                     break;
 
-                    case 198:
-                        wprintf(L"\tOff-Line Scan Uncorrectable Sector Count:\n");
+                case 198:
+                    wprintf(L"\tOff-Line Scan Uncorrectable Sector Count:\n");
                     break;
 
-                    case 199:
-                        wprintf(L"\tUltra DMA CRC Error Count:\n");
+                case 199:
+                    wprintf(L"\tUltra DMA CRC Error Count:\n");
                     break;
 
-                    case 220:
-                        wprintf(L"\tDisk Shiftt:\n");
+                case 220:
+                    wprintf(L"\tDisk Shiftt:\n");
                     break;
 
-                    case 222:
-                        wprintf(L"\tLoaded Hours:\n");
+                case 222:
+                    wprintf(L"\tLoaded Hours:\n");
                     break;
 
-                    case 223:
-                        wprintf(L"\tLoad Retry Count:\n");
+                case 223:
+                    wprintf(L"\tLoad Retry Count:\n");
                     break;
 
-                    case 224:
-                        wprintf(L"\tLoad Friction:\n");
+                case 224:
+                    wprintf(L"\tLoad Friction:\n");
                     break;
 
-                    case 226:
-                        wprintf(L"\tLoad in Time:\n");
+                case 226:
+                    wprintf(L"\tLoad in Time:\n");
                     break;
 
-                    case 240:
-                        wprintf(L"\tWrite Head:\n");
+                case 240:
+                    wprintf(L"\tWrite Head:\n");
                     break;
 
-                    case 254:
-                        wprintf(L"\tFree-fall Sensor Work Count:\n");
+                case 254:
+                    wprintf(L"\tFree-fall Sensor Work Count:\n");
                     break;
                 }
 
                 wprintf(L"\t\tStatus flags:\n");
-                    wprintf(L"\t\t\tpre-failure/advisory: %s\n",    (((smartData.Attribute[aa].StatusFlags[0]) >> 0) & 1) == 1 ? L"The drive may have failure." : L"Product life period may expired." );
-                    wprintf(L"\t\t\ton-line data collection: %s\n", (((smartData.Attribute[aa].StatusFlags[0]) >> 1) & 1) == 1 ? L"Attribute value will be changed during normal operation." : L"Attribute value will be changed during off-line data collection operation." );
-                    wprintf(L"\t\t\tPerformance Attribute: %s\n",   (((smartData.Attribute[aa].StatusFlags[0]) >> 2) & 1) == 1 ? L"TRUE" : L"FALSE");
-                    wprintf(L"\t\t\tError rate attribute:\n",       (((smartData.Attribute[aa].StatusFlags[0]) >> 3) & 1) == 1 ? L"TRUE" : L"FALSE");
-                    wprintf(L"\t\t\tEvent Count Attribute:\n",      (((smartData.Attribute[aa].StatusFlags[0]) >> 4) & 1) == 1 ? L"TRUE" : L"FALSE");
-                    wprintf(L"\t\t\tSelf-Preserving Attribute:\n",  (((smartData.Attribute[aa].StatusFlags[0]) >> 5) & 1) == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\t\t\tpre-failure/advisory: %s\n", (((smartData.Attribute[aa].StatusFlags[0]) >> 0) & 1) == 1 ? L"The drive may have failure." : L"Product life period may expired.");
+                wprintf(L"\t\t\ton-line data collection: %s\n", (((smartData.Attribute[aa].StatusFlags[0]) >> 1) & 1) == 1 ? L"Attribute value will be changed during normal operation." : L"Attribute value will be changed during off-line data collection operation.");
+                wprintf(L"\t\t\tPerformance Attribute: %s\n", (((smartData.Attribute[aa].StatusFlags[0]) >> 2) & 1) == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\t\t\tError rate attribute:\n", (((smartData.Attribute[aa].StatusFlags[0]) >> 3) & 1) == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\t\t\tEvent Count Attribute:\n", (((smartData.Attribute[aa].StatusFlags[0]) >> 4) & 1) == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\t\t\tSelf-Preserving Attribute:\n", (((smartData.Attribute[aa].StatusFlags[0]) >> 5) & 1) == 1 ? L"TRUE" : L"FALSE");
 
                 wprintf(L"\t\tATT value: 0x%02X [%d]\n", smartData.Attribute[aa].AttributeValue, smartData.Attribute[aa].AttributeValue);
                 wprintf(L"\t\tWorst value: 0x%02X [%d]\n", smartData.Attribute[aa].WorstValue, smartData.Attribute[aa].WorstValue);
@@ -962,39 +1215,39 @@ private:
         wprintf(L"\tAutomatic Off-Line Data Collection Status: ");
         switch ((((smartData.offlineDataCollectionStatus) >> 7) & 1))
         {
-            case 1:
-                wprintf(L"enabled\n");
+        case 1:
+            wprintf(L"enabled\n");
             break;
 
-            case 0:
-                wprintf(L"disabled\n");
+        case 0:
+            wprintf(L"disabled\n");
             break;
         }
         wprintf(L"\tDefinition: ");     // TODO: add other number for the same options (0x82, 0x83, ...)
         switch (aaaa)
         {
-            case 0:
-                wprintf(L"Off-line data collection never started.\n");
+        case 0:
+            wprintf(L"Off-line data collection never started.\n");
             break;
 
-            case 2:
-                wprintf(L"All segments completed without errors. In this case, current segment pointer equals to total segments required.\n");
+        case 2:
+            wprintf(L"All segments completed without errors. In this case, current segment pointer equals to total segments required.\n");
             break;
 
-            case 3:
-                wprintf(L"Off-line activity in progress.\n");
+        case 3:
+            wprintf(L"Off-line activity in progress.\n");
             break;
 
-            case 4:
-                wprintf(L"Off-line data collection suspended by interrupting command\n");
+        case 4:
+            wprintf(L"Off-line data collection suspended by interrupting command\n");
             break;
 
-            case 5:
-                wprintf(L"Off-line data collecting aborted by interrupting command\n");
+        case 5:
+            wprintf(L"Off-line data collecting aborted by interrupting command\n");
             break;
 
-            case 6:
-                wprintf(L"Off-line data collection aborted with fatal error\n");
+        case 6:
+            wprintf(L"Off-line data collection aborted with fatal error\n");
             break;
         }
         wprintf(L"\n");
@@ -1011,44 +1264,44 @@ private:
         stes_status = ((stes_status) & (~(1 << 2)));
         stes_status = ((stes_status) & (~(1 << 3)));
         stes_status = stes_status >> 4;
-        wprintf(L"\tPercent Self-test remaining: %d%\n",percents*10);
+        wprintf(L"\tPercent Self-test remaining: %d%\n", percents * 10);
         wprintf(L"\tCurrent Self-test execution status: ");
         switch (stes_status)
         {
-            case 0:
-                wprintf(L"The self-test routine completed without error or has never been run\n");
+        case 0:
+            wprintf(L"The self-test routine completed without error or has never been run\n");
             break;
 
-            case 1:
-                wprintf(L"The self-test routine aborted by the host\n");
+        case 1:
+            wprintf(L"The self-test routine aborted by the host\n");
             break;
 
-            case 2:
-                wprintf(L"The self-test routine interrupted by the host with a hard or soft reset\n");
+        case 2:
+            wprintf(L"The self-test routine interrupted by the host with a hard or soft reset\n");
             break;
 
-            case 3:
-                wprintf(L"The device was unable to complete the self-test routine due to a fatal error or unknown test error\n");
+        case 3:
+            wprintf(L"The device was unable to complete the self-test routine due to a fatal error or unknown test error\n");
             break;
 
-            case 4:
-                wprintf(L"The self-test routine completed with unknown element failure\n");
+        case 4:
+            wprintf(L"The self-test routine completed with unknown element failure\n");
             break;
 
-            case 5:
-                wprintf(L"The self-test routine completed with electrical element failure\n");
+        case 5:
+            wprintf(L"The self-test routine completed with electrical element failure\n");
             break;
 
-            case 6:
-                wprintf(L"The self-test routine completed with servo element failure\n");
+        case 6:
+            wprintf(L"The self-test routine completed with servo element failure\n");
             break;
 
-            case 7:
-                wprintf(L"The self-test routine completed with read element failure\n");
+        case 7:
+            wprintf(L"The self-test routine completed with read element failure\n");
             break;
 
-            case 15:
-                wprintf(L"The self-test routine in progress\n");
+        case 15:
+            wprintf(L"The self-test routine in progress\n");
             break;
         }
         wprintf(L"\n");
@@ -1066,67 +1319,67 @@ private:
         wprintf(L"\tExecute Off-line Immediate implemented bit: ");
         switch ((((smartData.Offline_data_collection_capability) >> 0) & 1))
         {
-            case 0:
-                wprintf(L"FALSE\n");
+        case 0:
+            wprintf(L"FALSE\n");
             break;
 
-            case 1:
-                wprintf(L"TRUE\n");
+        case 1:
+            wprintf(L"TRUE\n");
             break;
         }
         wprintf(L"\tEnable/disable Automatic Off-line implemented bit: ");
         switch ((((smartData.Offline_data_collection_capability) >> 1) & 1))
         {
-            case 0:
-                wprintf(L"FALSE\n");
+        case 0:
+            wprintf(L"FALSE\n");
             break;
 
-            case 1:
-                wprintf(L"TRUE\n");
+        case 1:
+            wprintf(L"TRUE\n");
             break;
         }
         wprintf(L"\tabort/restart off-line by host bit: ");
         switch ((((smartData.Offline_data_collection_capability) >> 2) & 1))
         {
-            case 0:
-                wprintf(L"The device will suspend off-line data collection activity after an interrupting command and resume it after some vendor specific event\n");
+        case 0:
+            wprintf(L"The device will suspend off-line data collection activity after an interrupting command and resume it after some vendor specific event\n");
             break;
 
-            case 1:
-                wprintf(L"The device will abort off-line data collection activity upon receipt of a new command\n");
+        case 1:
+            wprintf(L"The device will abort off-line data collection activity upon receipt of a new command\n");
             break;
         }
         wprintf(L"\tOff-line Read Scanning implemented bit: ");
         switch ((((smartData.Offline_data_collection_capability) >> 3) & 1))
         {
-            case 0:
-                wprintf(L"FALSE\n");
+        case 0:
+            wprintf(L"FALSE\n");
             break;
 
-            case 1:
-                wprintf(L"TRUE\n");
+        case 1:
+            wprintf(L"TRUE\n");
             break;
         }
         wprintf(L"\tSelf-test implemented bit: ");
         switch ((((smartData.Offline_data_collection_capability) >> 4) & 1))
         {
-            case 0:
-                wprintf(L"FALSE\n");
+        case 0:
+            wprintf(L"FALSE\n");
             break;
 
-            case 1:
-                wprintf(L"TRUE\n");
+        case 1:
+            wprintf(L"TRUE\n");
             break;
         }
         wprintf(L"\tSelective self-test implemented bit: ");
         switch ((((smartData.Offline_data_collection_capability) >> 6) & 1))
         {
-            case 0:
-                wprintf(L"FALSE\n");
+        case 0:
+            wprintf(L"FALSE\n");
             break;
 
-            case 1:
-                wprintf(L"TRUE\n");
+        case 1:
+            wprintf(L"TRUE\n");
             break;
         }
         wprintf(L"\n");
@@ -1137,23 +1390,23 @@ private:
         wprintf(L"\tPre-power mode attribute saving capability: ");
         switch ((((smartData.SMART_capability[0]) >> 0) & 1))
         {
-            case 0:
-                wprintf(L"FALSE\n");
+        case 0:
+            wprintf(L"FALSE\n");
             break;
 
-            case 1:
-                wprintf(L"TRUE\n");
+        case 1:
+            wprintf(L"TRUE\n");
             break;
         }
         wprintf(L"\tAttribute autosave capability: ");
         switch ((((smartData.SMART_capability[0]) >> 1) & 1))
         {
-            case 0:
-                wprintf(L"FALSE\n");
+        case 0:
+            wprintf(L"FALSE\n");
             break;
 
-            case 1:
-                wprintf(L"TRUE\n");
+        case 1:
+            wprintf(L"TRUE\n");
             break;
         }
         wprintf(L"\n");
@@ -1298,52 +1551,52 @@ private:
     void printError(DWORD err_id, const wchar_t fun[])
     {
         wchar_t temp_string[100];
-        
+
         switch (err_id)
         {
-            case 1:
-                swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_INVALID_FUNCTION].\n", fun, err_id);
+        case 1:
+            swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_INVALID_FUNCTION].\n", fun, err_id);
             break;
 
-            case 2:
-                swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_FILE_NOT_FOUND].\n", fun, err_id);
+        case 2:
+            swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_FILE_NOT_FOUND].\n", fun, err_id);
             break;
 
-            case 5:
-                swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_ACCESS_DENIED].\n", fun, err_id);
+        case 5:
+            swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_ACCESS_DENIED].\n", fun, err_id);
             break;
 
-            case 6:
-                swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_INVALID_HANDLE].\n", fun, err_id);
+        case 6:
+            swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_INVALID_HANDLE].\n", fun, err_id);
             break;
 
-            case 8:
-                swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_NOT_ENOUGH_MEMORY].\n", fun, err_id);
+        case 8:
+            swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_NOT_ENOUGH_MEMORY].\n", fun, err_id);
             break;
 
-            case 31:
-                swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_GEN_FAILURE]. (A device attached to the system is not functioning.)\n", fun, err_id);
+        case 31:
+            swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_GEN_FAILURE]. (A device attached to the system is not functioning.)\n", fun, err_id);
             break;
 
-            case 50:
-                swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_NOT_SUPPORTED].\n", fun, err_id);
+        case 50:
+            swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_NOT_SUPPORTED].\n", fun, err_id);
             break;
 
-            case 53:
-                swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_BAD_NETPATH].\n", fun, err_id);
+        case 53:
+            swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_BAD_NETPATH].\n", fun, err_id);
             break;
 
-            case 87:
-                swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_INVALID_PARAMETER].\n", fun, err_id);
+        case 87:
+            swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_INVALID_PARAMETER].\n", fun, err_id);
             break;
 
-            case 122:
-                swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_INSUFFICIENT_BUFFER].\n", fun, err_id);
+        case 122:
+            swprintf(temp_string, 100, L"%s failed. Error %ld [ERROR_INSUFFICIENT_BUFFER].\n", fun, err_id);
             break;
 
-            default:
-                swprintf(temp_string, 100, L"%s failed. Error %ld [].\n", fun, err_id);
-                break;
+        default:
+            swprintf(temp_string, 100, L"%s failed. Error %ld [].\n", fun, err_id);
+            break;
         }
 
         wprintf(L"%s\n", temp_string);
@@ -1367,9 +1620,41 @@ private:
         out[n] = '\0';
     }
 
+    void printResponseData(UCHAR response[], int LBA_flag, wchar_t text[])
+    {
+
+        wprintf(L"RETURNED STATUS: \n");
+        wprintf(L"ERROR: 0x%02X\n", response[0]);
+        wprintf(L"\tIllegal length indicator: %s\n", (((response[0]) >> 0) & 1) == 1 ? L"TRUE" : L"FALSE");
+        wprintf(L"\tEnd of media: %s\n", (((response[0]) >> 1) & 1) == 1 ? L"TRUE" : L"FALSE");
+        wprintf(L"\tAbort: %s\n", (((response[0]) >> 2) & 1) == 1 ? L"TRUE" : L"FALSE");
+        wprintf(L"\tID not found: %s\n", (((response[0]) >> 4) & 1) == 1 ? L"TRUE" : L"FALSE");
+        wprintf(L"\tUncorrectable: %s\n", (((response[0]) >> 6) & 1) == 1 ? L"TRUE" : L"FALSE");
+        wprintf(L"\tInterface CRC: %s\n", (((response[0]) >> 7) & 1) == 1 ? L"TRUE" : L"FALSE");
 
 
+        wprintf(L"DEVICE: 0x%02X\n", response[5]);
 
+        wprintf(L"STATUS: 0x%02X\n", response[6]);
+        wprintf(L"\tError: %s\n", (((response[6]) >> 0) & 1) == 1 ? L"TRUE" : L"FALSE");
+        wprintf(L"\tSense data available: %s\n", (((response[6]) >> 1) & 1) == 1 ? L"TRUE" : L"FALSE");
+        wprintf(L"\tAlignment error: %s\n", (((response[6]) >> 2) & 1) == 1 ? L"TRUE" : L"FALSE");
+        wprintf(L"\tDevice fault: %s\n", (((response[6]) >> 5) & 1) == 1 ? L"TRUE" : L"FALSE");
+        wprintf(L"\tTransport:\n");
+        wprintf(L"\t\tBSY: %s\n", (((response[6]) >> 3) & 1) == 1 ? L"TRUE" : L"FALSE");
+        wprintf(L"\t\tDRDY: %s\n", (((response[6]) >> 6) & 1) == 1 ? L"TRUE" : L"FALSE");
+        wprintf(L"\t\tDRQ: %s\n", (((response[6]) >> 7) & 1) == 1 ? L"TRUE" : L"FALSE");
+        wprintf(L"\n");
+        wprintf(L"\n");
+
+        if (LBA_flag == 1)
+        {
+            wprintf(L"LBA [%s]: 0x%X%X%X\n", text, response[2], response[3], response[4]);
+        }
+
+        wprintf(L"\n");
+        wprintf(L"\n"); wprintf(L"\n");
+    }
 };
 
 

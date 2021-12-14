@@ -11,7 +11,7 @@
 #include <fileapi.h>
 #include <ntddscsi.h>
 
-
+#include <array>
 #include <sstream>
 
 
@@ -43,10 +43,12 @@ DEFINE_GUID(PARTITION_MSFT_RECOVERY_GUID, 0xde94bba4L, 0x06d1, 0x4d40, 0xa1, 0x6
 #include "fast.h"
 #include "bitManipulation.h"
 
+#include "ata_data.h"
+
 #include "disk_geometry.h"
 
 
-typedef struct 
+typedef struct
 {
 	int can_be_used_flag;
 	int multiple_drives_flag;
@@ -64,6 +66,7 @@ typedef struct
 	int predFailure_flag;
 	int ATA_IDD_flag;
 	int DCO_flag;
+	int HPA_data_flag;
 
 } FLAGS;
 
