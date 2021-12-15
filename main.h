@@ -44,6 +44,7 @@ DEFINE_GUID(PARTITION_MSFT_RECOVERY_GUID, 0xde94bba4L, 0x06d1, 0x4d40, 0xa1, 0x6
 #include "bitManipulation.h"
 
 #include "ata_data.h"
+#include "disk_data.h"
 
 #include "disk_geometry.h"
 

@@ -1,44 +1,5 @@
 ﻿#pragma once
 
-#define MAX_ATTRIBUTE 30
-
-
-
-typedef struct    //smart attribute
-{
-    BYTE    Id;
-    BYTE    StatusFlags[2];
-    BYTE    AttributeValue;
-    BYTE    WorstValue;
-    BYTE    RawValue[6];
-    BYTE    Reserved;
-} SMART_ATTRIBUTE;
-
-typedef struct
-{
-    ULONG PredictFailure;
-    BYTE revisionNumber[2];
-    SMART_ATTRIBUTE Attribute[MAX_ATTRIBUTE];
-
-    BYTE offlineDataCollectionStatus;
-    BYTE selfTestExecutionStatus;
-    BYTE Total_time_in_seconds_to_complete_off_line_data_collection_activity[2];
-    BYTE Reserved;
-    BYTE Offline_data_collection_capability;
-    BYTE SMART_capability[2];
-    BYTE Error_logging_capability;
-    BYTE Self_test_Failure_Checkpoint;
-    BYTE Short_self_test_routine_recommended_polling_time_minutes;
-    BYTE Extended_self_test_routine_recommended_polling_time_minutes;
-    //BYTE Reserved[];      // currently IGNORED
-    BYTE Data_tructure_Checksum;
-
-} SMART_DATA;
-
-
-
-
-
 
 class LOCAL_DISK_GEOMETRY
 {
@@ -77,7 +38,6 @@ public:
         smartData = { 0 };
     }
 
-
     void startDevice()
     {
         hDevice = CreateFileW(drive_path,          // drive to open
@@ -99,15 +59,6 @@ public:
             printError(GetLastError(), L"CreateFileW");
         }
     }
-
-
-
-
-
-
-
-
-
 
     void endDevice()
     {
@@ -587,7 +538,6 @@ public:
         }
     }
 
-
     void GetATACommandResponse_DCO_data()
     {
         ATA_COMMAND dco_get{ 0x00 };
@@ -812,42 +762,71 @@ public:
             wprintf(L"Queue depth: %X -->  %X [%d]\n", *(data + 75), id_data->Queue_depth, id_data->Queue_depth);
             wprintf(L"\n");
 
-            wprintf(L"Serial ATA Capabilities: %X -->  %X\n", *(data + 76), id_data->Serial_ATA_Capabilities);
-            wprintf(L"\tSupports SATA Gen1 Signaling Speed (1.5Gb/s): %s\n", id_data->Serial_ATA_Capabilities.a1 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tSupports SATA Gen2 Signaling Speed (3.0Gb/s): %s\n", id_data->Serial_ATA_Capabilities.a2 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tSupports SATA Gen3 Signaling Speed (6.0Gb/s): %s\n", id_data->Serial_ATA_Capabilities.a3 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tSupports the NCQ feature set: %s\n", id_data->Serial_ATA_Capabilities.a8 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tSupports receipt of host initiated power management requests: %s\n", id_data->Serial_ATA_Capabilities.a9 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\t Supports the SATA Phy Event Counters log: %s\n", id_data->Serial_ATA_Capabilities.a10 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tSupports Unload while NCQ commands are outstanding: %s\n", id_data->Serial_ATA_Capabilities.a11 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tSupports NCQ priority information: %s\n", id_data->Serial_ATA_Capabilities.a12 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tSupports Host Automatic Partial to Slumber transitions: %s\n", id_data->Serial_ATA_Capabilities.a13 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tSupports Device Automatic Partial to Slumber transitions: %s\n", id_data->Serial_ATA_Capabilities.a14 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tSupports READ LOG DMA EXT: %s\n", id_data->Serial_ATA_Capabilities.a15 == 1 ? L"TRUE" : L"FALSE");
+            if (*(data + 76) != 0x0000 || *(data + 76) != 0xFFFF)
+            {
+                wprintf(L"Serial ATA Capabilities: %X -->  %X\n", *(data + 76), id_data->Serial_ATA_Capabilities);
+                wprintf(L"\tSupports SATA Gen1 Signaling Speed (1.5Gb/s): %s\n", id_data->Serial_ATA_Capabilities.a1 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tSupports SATA Gen2 Signaling Speed (3.0Gb/s): %s\n", id_data->Serial_ATA_Capabilities.a2 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tSupports SATA Gen3 Signaling Speed (6.0Gb/s): %s\n", id_data->Serial_ATA_Capabilities.a3 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tSupports the NCQ feature set: %s\n", id_data->Serial_ATA_Capabilities.a8 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tSupports receipt of host initiated power management requests: %s\n", id_data->Serial_ATA_Capabilities.a9 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\t Supports the SATA Phy Event Counters log: %s\n", id_data->Serial_ATA_Capabilities.a10 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tSupports Unload while NCQ commands are outstanding: %s\n", id_data->Serial_ATA_Capabilities.a11 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tSupports NCQ priority information: %s\n", id_data->Serial_ATA_Capabilities.a12 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tSupports Host Automatic Partial to Slumber transitions: %s\n", id_data->Serial_ATA_Capabilities.a13 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tSupports Device Automatic Partial to Slumber transitions: %s\n", id_data->Serial_ATA_Capabilities.a14 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tSupports READ LOG DMA EXT: %s\n", id_data->Serial_ATA_Capabilities.a15 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\n");
+
+                wprintf(L"Serial ATA Additional Capabilities: %X -->  %X\n", *(data + 77), id_data->Serial_ATA_Additional_Capabilities);
+                wprintf(L"\tCURRENT SERIAL ATA SIGNAL SPEED: %d\n", id_data->Serial_ATA_Additional_Capabilities.a1);
+                wprintf(L"\tSupports NCQ Streaming: %s\n", id_data->Serial_ATA_Additional_Capabilities.a4 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tSupports NCQ Queue Management Command: %s\n", id_data->Serial_ATA_Additional_Capabilities.a5 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tSupports RECEIVE FPDMA QUEUED and SEND FPDMA QUEUED commands: %s\n", id_data->Serial_ATA_Additional_Capabilities.a6 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\n");
+
+                wprintf(L"Serial ATA features supported: %X -->  %X\n", *(data + 78), id_data->SATA_Features_Supported);
+                wprintf(L"\tDevice supports non-zero buffer offsets: %s\n", id_data->SATA_Features_Supported.a1 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tDevice supports DMA Setup auto-activation: %s\n", id_data->SATA_Features_Supported.a2 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tDevice supports initiating power management: %s\n", id_data->SATA_Features_Supported.a3 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tDevice supports in-order data delivery: %s\n", id_data->SATA_Features_Supported.a4 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tDevice supports Hardware Feature Control: %s\n", id_data->SATA_Features_Supported.a5 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tDevice supports Software Settings Preservation: %s\n", id_data->SATA_Features_Supported.a6 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tDevice supports NCQ Autosense: %s\n", id_data->SATA_Features_Supported.a7 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\n");
+
+                wprintf(L"Serial ATA features enabled: %X -->  %X\n", *(data + 79), id_data->SATA_Features_Enabled);
+                wprintf(L"\tNon-zero buffer offsets: %s\n", id_data->SATA_Features_Enabled.a1 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tDMA Setup auto-activation: %s\n", id_data->SATA_Features_Enabled.a2 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tDevice initiated power management: %s\n", id_data->SATA_Features_Enabled.a3 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tIn-order data delivery: %s\n", id_data->SATA_Features_Enabled.a4 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tHardware Feature Control: %s\n", id_data->SATA_Features_Enabled.a5 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tSoftware Settings Preservation: %s\n", id_data->SATA_Features_Enabled.a6 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tAutomatic Partial to Slumber transitions: %s\n", id_data->SATA_Features_Enabled.a7 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\n");
+            }
+
+            if (*(data + 80) != 0x0000 || *(data + 80) != 0xFFFF)
+            {
+                wprintf(L"Major version number: %X -->  %X\n", *(data + 80), id_data->Major_revision_number);
+                wprintf(L"\tsupports ATA/ATAPI-5: %s\n", id_data->Major_revision_number.a5 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tsupports ATA/ATAPI-6: %s\n", id_data->Major_revision_number.a6 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tsupports ATA/ATAPI-7: %s\n", id_data->Major_revision_number.a7 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tsupports ATA8-ACS: %s\n", id_data->Major_revision_number.a8 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tsupports ACS-2: %s\n", id_data->Major_revision_number.a9 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\tsupports ACS-3: %s\n", id_data->Major_revision_number.a10 == 1 ? L"TRUE" : L"FALSE");
+                wprintf(L"\n");
+            }
+
+            wprintf(L"Minor version number: %X -->  %X\n", *(data + 81), id_data->Minor_revision_number);
+            MinorVersionNumberPrint(id_data->Minor_revision_number);
             wprintf(L"\n");
 
-            wprintf(L"Serial ATA Additional Capabilities: %X -->  %X\n", *(data + 77), id_data->Serial_ATA_Additional_Capabilities);
-            wprintf(L"\tCURRENT SERIAL ATA SIGNAL SPEED: %d\n", id_data->Serial_ATA_Additional_Capabilities.a1);
-            wprintf(L"\tSupports NCQ Streaming: %s\n", id_data->Serial_ATA_Additional_Capabilities.a4 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tSupports NCQ Queue Management Command: %s\n", id_data->Serial_ATA_Additional_Capabilities.a5 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tSupports RECEIVE FPDMA QUEUED and SEND FPDMA QUEUED commands: %s\n", id_data->Serial_ATA_Additional_Capabilities.a6 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\n");
 
-            wprintf(L"Serial ATA features supported: %X -->  %X\n", *(data + 78), id_data->SATA_Features_Supported);
-            wprintf(L"\tDevice supports non-zero buffer offsets: %s\n", id_data->SATA_Features_Supported.a1 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tDevice supports DMA Setup auto-activation: %s\n", id_data->SATA_Features_Supported.a2 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tDevice supports initiating power management: %s\n", id_data->SATA_Features_Supported.a3 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tDevice supports in-order data delivery: %s\n", id_data->SATA_Features_Supported.a4 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tDevice supports Hardware Feature Control: %s\n", id_data->SATA_Features_Supported.a5 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tDevice supports Software Settings Preservation: %s\n", id_data->SATA_Features_Supported.a6 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\tDevice supports NCQ Autosense: %s\n", id_data->SATA_Features_Supported.a7 == 1 ? L"TRUE" : L"FALSE");
-            wprintf(L"\n");
 
-            // TODO: continue
 
-            wprintf(L"\n");
-            wprintf(L"\n");
-            wprintf(L"\n");
+
+
             wprintf(L"\n");
             wprintf(L"\n");
             wprintf(L"\n");
@@ -948,7 +927,6 @@ public:
             wprintf(L"File system flags: %08X ", lpFileSystemFlags);
         }
     }
-
 
     void GetDiskPerformanceOFF()
     {
@@ -1654,6 +1632,125 @@ private:
 
         wprintf(L"\n");
         wprintf(L"\n"); wprintf(L"\n");
+    }
+
+    void MinorVersionNumberPrint(WORD a)
+    {
+        switch (a)
+        {
+            case 0x0000:
+                wprintf(L"\tMinor version is not reported\n");
+            break;
+
+            case 0x0013:
+                wprintf(L"\tATA/ATAPI-5 T13 1321D version 3\n");
+            break;
+
+            case 0x0015:
+                wprintf(L"\tATA/ATAPI-5 T13 1321D version 1\n");
+            break;
+
+            case 0x0016:
+                wprintf(L"\tATA/ATAPI-5 published, ANSI INCITS 340-2000\n");
+            break;
+
+            case 0x0018:
+                wprintf(L"\t ATA/ATAPI-6 T13 1410D version 0\n");
+            break;
+
+            case 0x0019:
+                wprintf(L"\tATA/ATAPI-6 T13 1410D version 3a\n");
+            break;
+
+            case 0x001a:
+                wprintf(L"\tATA/ATAPI-7 T13 1532D version 1\n");
+            break;
+
+            case 0x001b:
+                wprintf(L"\tATA/ATAPI-6 T13 1410D version 2\n");
+            break;
+
+            case 0x001c:
+                wprintf(L"\tATA/ATAPI-6 T13 1410D version 1\n");
+            break;
+
+            case 0x001d:
+                wprintf(L"\tATA/ATAPI-7 published ANSI INCITS 397-2005\n");
+            break;
+
+            case 0x001e:
+                wprintf(L"\tATA/ATAPI-7 T13 1532D version 0\n");
+            break;
+
+            case 0x001f:
+                wprintf(L"\tACS-3 Revision 3b\n");
+            break;
+
+            case 0x0021:
+                wprintf(L"\tATA/ATAPI-7 T13 1532D version 4a\n");
+            break;
+
+            case 0x0022:
+                wprintf(L"\tATA/ATAPI-6 published, ANSI INCITS 361-2002\n");
+            break;
+
+            case 0x0027:
+                wprintf(L"\tATA8-ACS version 3c\n");
+            break;
+
+            case 0x0028:
+                wprintf(L"\tATA8-ACS version 6\n");
+            break;
+
+            case 0x0029:
+                wprintf(L"\tATA8-ACS version 4\n");
+            break;
+
+            case 0x0031:
+                wprintf(L"\tACS-2 Revision 2\n");
+            break;
+
+            case 0x0033:
+                wprintf(L"\tATA8-ACS version 3e\n");
+            break; 
+
+            case 0x0039:
+                wprintf(L"\tATA8-ACS version 4c\n");
+            break;
+
+            case 0x0042:
+                wprintf(L"\tATA8-ACS version 3f\n");
+            break;
+
+            case 0x0052:
+                wprintf(L"\tATA8-ACS version 3b\n");
+            break;
+
+            case 0x006d:
+                wprintf(L"\tACS-3 Revision 5\n");
+            break;
+
+            case 0x0082:
+                wprintf(L"\tACS-2 published, ANSI INCITS 482-2012\n");
+            break;
+
+            case 0x0107:
+                wprintf(L"\tATA8-ACS version 2d\n");
+            break;
+
+            case 0x0110:
+                wprintf(L"\tACS-2 Revision 3\n");
+            break;
+
+            case 0x011b:
+                wprintf(L"\t ACS-3 Revision 4\n");
+            break;
+
+            case 0xffff:
+                wprintf(L"\t Minor version is not reported\n");
+            break;
+        }
+
     }
 };
 
