@@ -5,6 +5,8 @@ class LOCAL_DISK_GEOMETRY
 {
 public:
 
+    
+
     wchar_t drive_path[30];
     ULONGLONG cylinders;
     ULONGLONG tracksPerCylinder;
@@ -631,6 +633,8 @@ public:
 
     void GetATACommandResponse_IDENTIFY_DEVICE_data()
     {
+        // TODO: add for PATA and SATA version
+        
         ATA_COMMAND id_get{ 0x00 };
         id_get.bDriveHeadReg = 0x01;
         id_get.bCommandReg = 0xEC;

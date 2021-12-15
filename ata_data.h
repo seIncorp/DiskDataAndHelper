@@ -405,62 +405,115 @@ typedef struct
         USHORT a15 : 1;
     } Command_set_feature_enabled_supported_3;
 
-    WORD Ultra_DMA_modes;                                                                   // Word 88
+    struct                                                                    // Word 88
+    {
+        USHORT a0 : 1;
+        USHORT a1 : 1;
+        USHORT a2 : 1;
+        USHORT a3 : 1;
+        USHORT a4 : 1;
+        USHORT a5 : 1;
+        USHORT a6 : 1;
+        USHORT : 1;
+        USHORT a8 : 1;
+        USHORT a9 : 1;
+        USHORT a10 : 1;
+        USHORT a11 : 1;
+        USHORT a12 : 1;
+        USHORT a13 : 1;
+        USHORT a14 : 1;
+        USHORT : 1;
+    } Ultra_DMA_modes;
+
     WORD Time_required_for_security_erase_unit_completion;                                  // Word 89
     WORD Time_required_for_Enhanced_security_erase_completion;                              // Word 90
     WORD Current_advanced_power_management_value;                                           // Word 91
     WORD Master_Password_Identifier;                                                        // Word 92
-    WORD Hardware_reset_result;                                                             // Word 93
-    WORD Vendor_recommended_acoustic;                                                       // Word 94
+
+    struct                                                              // Word 93
+    {
+        USHORT a0 : 1;
+        USHORT a1 : 2;
+        USHORT a3 : 1;
+        USHORT a4 : 1;
+        USHORT a5 : 1;
+        USHORT a6 : 1;
+        USHORT  : 1;
+        USHORT a8 : 1;
+        USHORT a9 : 2;
+        USHORT a11 : 1;
+        USHORT  : 1;
+        USHORT a13 : 1;
+        USHORT a14 : 1;
+        USHORT a15 : 1;
+    } Hardware_reset_result;
+
+    WORD Obsolete_10;                                                       // Word 94
     WORD Stream_Minimum_Request_Size;                                                       // Word 95
     WORD Streaming_Transfer_Time_DMA;                                                       // Word 96
     WORD Streaming_Access_Latency_DMA_and_PIO;                                              // Word 97
     WORD Streaming_Performance_Granularity[2];                                              // Word 98 - 99
     WORD Total_Number_of_User_Addressable_Sectors_for_the_48_bit_Address_feature_set[4];    // Word 100 - 103
     WORD Streaming_Transfer_Time_PIO;                                                       // Word 104
-    WORD Reserved_8;                                                                        // Word 105
+    WORD Reserved_8;  // ??                                                                      // Word 105
     WORD Physical_sector_size_Logical_Sector_Size;                                          // Word 106
     WORD Inter_seek_delay_for_ISO_7779_acoustic_testing_in_microseconds;                    // Word 107
     WORD xyz_1;                                                                             // Word 108
     WORD xyz_2;                                                                             // Word 109
     WORD xyz_3;                                                                             // Word 110
     WORD xyz_4;                                                                             // Word 111
-    WORD Reserved_for_world_wide_name_extension_to_128_bits;                                // Word 112 - 115
-    WORD Reserved_for_INCITS_TR37_2004;                                                     // Word 116
-    WORD Words_per_Logical_Sector;                                                          // Word 117 - 118
+    WORD Reserved_for_world_wide_name_extension_to_128_bits[4];                                // Word 112 - 115
+    WORD Reserved_for_INCITS_TR37_2004;                      // ??                          // Word 116
+    WORD Words_per_Logical_Sector[2];                                                          // Word 117 - 118
     WORD Supported_Settings;                                                                // Word 119
     WORD Command_set_feature_enabled_supported_4;                                           // Word 120
-    WORD Reserved_for_expanded_supportedand_enabled_settings;                               // Word 121 - 126
+    WORD Reserved_for_expanded_supportedand_enabled_settings[6];                               // Word 121 - 126
     WORD Obsolete_8;                                                                        // Word 127
     WORD Security_status;                                                                   // Word 128
     WORD Vendor_specific[31];                                                               // Word 129 - 159
-    WORD CFA_power_mode_1;                                                                  // Word 160
-    WORD Reserved_9[15];                                                                    // Word 161 - 175
+    WORD Reserved_9[8];                                                                    // Word 160 - 167
+    WORD Device_Nominal_Form_Factor;                                                          // Word 168
+    WORD DATA_SET_MANAGEMENT_support;                                                          // Word 169
+    WORD Additional_Product_Identifier[4];                                                   // Word 170 - 173
+    WORD Reserved_10[2];                                                                    // Word 174 - 175
     WORD Current_media_serial_number[30];                                                   // Word 176 - 205
     WORD SCT_Command_Transport;                                                             // Word 206
     WORD Reserved_10[2];                                                                    // Word 207 - 208
     WORD Alignment_of_logical_blocks_within_a_larger_physical_block;                        // Word 209
     WORD Write_Read_Verify_Sector_Count_Mode_3_Only[2];                                     // Word 210 - 211
     WORD Verify_Sector_Count_Mode_2_Only[2];                                                // Word 212 - 213
-    WORD NV_Cache_Capabilities;                                                             // Word 214
-    WORD NV_Cache_Size_in_Logical_Blocks_1;                                                 // Word 215
-    WORD NV_Cache_Size_in_Logical_Blocks_2;                                                 // Word 216
+    WORD Obsolete_9[3];                                                                     // Word 214 - 216
     WORD Nominal_media_rotation_rate;                                                       // Word 217
     WORD Reserved_11;                                                                       // Word 218
-    WORD NV_Cache_Options;                                                                  // Word 219
-    WORD Reserved_12;                                                                       // Word 220
+    WORD Obsolete_10;                                                                  // Word 219
+    WORD Write_Read_Verify_Mode;                                                             // Word 220
     WORD Reserved_13;                                                                       // Word 221
-    WORD Transport_Major_revision_number;                                                   // Word 222
+    
+    struct                                                    // Word 222
+    {
+        USHORT a0 : 1;
+        USHORT a1 : 1;
+        USHORT a2 : 1;
+        USHORT a3 : 1;
+        USHORT a4 : 1;
+        USHORT a5 : 1;
+        USHORT a6 : 1;
+        USHORT  : 5;
+        USHORT a12 : 4;
+
+    } Transport_Major_revision_number;
+
     WORD Transport_Minor_revision_number;                                                   // Word 223
-    WORD Reserved_14[10];                                                                   // Word 224 - 233
-    WORD Minimum_number_of_512_byte_units_per_DOWNLOAD_MICROCODE_command_for_mode_03h;      // Word 234
-    WORD Maximum_number_of_512_byte_units_per_DOWNLOAD_MICROCODE_command_for_mode_03h;      // Word 235
+    WORD Reserved_14[6];                                                                   // Word 224 - 229
+    WORD Extended_Number_of_User_Addressable_Sectors[4];                                    // Word 230 - 233
+    WORD Minimum_number_of_512_byte_data_blocks_per_Download_Microcode_mode_03h_operation;  // Word 234
+    WORD Maximum_number_of_512_byte_data_blocks_per_Download_Microcode_mode_03h_operation;   // Word 235
     WORD Reserved_15[19];                                                                   // Word 236 - 254
 
     struct                                                                    // Word 255
     {
-        USHORT a0 : 8;
-        USHORT a1 : 8;
+        USHORT Checksum_Validity_Indicator : 8;
+        USHORT Checksum : 8;
     } Integrity_word;
 
 } IDENTIFY_DEVICE_DATA;
