@@ -98,7 +98,7 @@ typedef struct
 
 typedef struct
 {
-    struct                                                             // Word 0
+    struct                                                                                  // Word 0
     {
         USHORT a1 : 2;
         USHORT a2 : 1;
@@ -119,21 +119,21 @@ typedef struct
     UCHAR Firmware_revision[8];                                                             // Word 23 - 26
     UCHAR Model_number[40];                                                                 // Word 27 - 46
 
-    struct                                                                    // Word 47
+    struct                                                                                  // Word 47
     {
         USHORT a1 : 8;
         USHORT a2 : 8;
     } Mandatory_1;
 
-    struct                                                         // Word 48
+    struct                                                                                  // Word 48
     {
         USHORT a0 : 1;
         USHORT : 13;
         USHORT a14 : 1;
-        USHORT a15 : 1;
+        USHORT a15 : 1; 
     } Trusted_Computing_feature;
 
-    struct                                                                    // Word 49
+    struct                                                                                  // Word 49
     {
         USHORT a0 : 2;
         USHORT : 6;
@@ -147,7 +147,7 @@ typedef struct
 
     }Capabilities_1;
 
-    struct                                                                    // Word 50
+    struct                                                                                  // Word 50
     {
         USHORT a0 : 1;
         USHORT : 15;
@@ -156,7 +156,7 @@ typedef struct
 
     WORD Obsolete_5[2];                                                                     // Word 51 - 52
 
-    struct                                                                 // Word 53
+    struct                                                                                  // Word 53
     {
         USHORT : 1;
         USHORT a1 : 1;
@@ -167,7 +167,7 @@ typedef struct
 
     WORD Obsolete_6[5];                                                                     // Word 54 - 58
 
-    struct                                                           // Word 59
+    struct                                                                                  // Word 59
     {
         USHORT a0 : 8;
         USHORT a8 : 1;
@@ -183,7 +183,7 @@ typedef struct
     WORD Total_n_user_addr_log_sectors[2];                                                  // Word 60 - 61
     WORD Obsolete_7;                                                                        // Word 62
 
-    struct                                                         // Word 63
+    struct                                                                                  // Word 63
     {
         USHORT a0 : 1;
         USHORT a1 : 1;
@@ -195,7 +195,7 @@ typedef struct
         USHORT : 5;
     } Multiword_DMA_transfer;
 
-    struct                                                  // Word 64
+    struct                                                                                  // Word 64
     {
         USHORT a0 : 1;
         USHORT a1 : 1;
@@ -207,7 +207,7 @@ typedef struct
     WORD Min_PIO_trans_cycle_time_without_flow_con;                                         // Word 67
     WORD Min_PIO_trans_cycle_time_with_IORDY_flow_con;                                      // Word 68
 
-    struct                                                              // Word 69
+    struct                                                                                  // Word 69
     {
         USHORT : 2;
         USHORT a2 : 1;
@@ -229,13 +229,13 @@ typedef struct
     WORD Reserved_5;                                                                        // Word 70
     WORD Reserved_6[4];                                                                     // Word 71 - 74
 
-    struct                                                                    // Word 75
+    struct                                                                                  // Word 75
     {
         USHORT a0 : 5;
         USHORT : 11;
     } Queue_depth;
 
-    struct                                                        // Word 76
+    struct                                                                                  // Word 76
     {
         USHORT a0 : 1;
         USHORT a1 : 1;
@@ -252,7 +252,7 @@ typedef struct
         USHORT a15 : 1;
     } Serial_ATA_Capabilities;
 
-    struct                                                // Word 77
+    struct                                                                                  // Word 77
     {
         USHORT a0 : 1;
         USHORT a1 : 3;
@@ -262,7 +262,7 @@ typedef struct
         USHORT : 9;
     } Serial_ATA_Additional_Capabilities;
 
-    struct                                                           // Word 78
+    struct                                                                                  // Word 78
     {
         USHORT a0 : 1;
         USHORT a1 : 1;
@@ -275,7 +275,7 @@ typedef struct
         USHORT : 8;
     } SATA_Features_Supported;
 
-    struct                                                             // Word 79
+    struct                                                                                  // Word 79
     {
         USHORT a0 : 1;
         USHORT a1 : 1;
@@ -288,7 +288,7 @@ typedef struct
         USHORT : 8;
     } SATA_Features_Enabled;
 
-    struct                                                             // Word 80
+    struct                                                                                  // Word 80
     {
         USHORT : 5;
         USHORT a5 : 1;
@@ -302,7 +302,7 @@ typedef struct
 
     WORD Minor_revision_number;                                                             // Word 81
     
-    struct                                                    // Word 82
+    struct                                                                                  // Word 82
     {
         USHORT a0 : 1;
         USHORT a1 : 1;
@@ -448,44 +448,94 @@ typedef struct
         USHORT a15 : 1;
     } Hardware_reset_result;
 
-    WORD Obsolete_10;                                                       // Word 94
+    WORD Obsolete_10;                                                                       // Word 94
     WORD Stream_Minimum_Request_Size;                                                       // Word 95
     WORD Streaming_Transfer_Time_DMA;                                                       // Word 96
     WORD Streaming_Access_Latency_DMA_and_PIO;                                              // Word 97
     WORD Streaming_Performance_Granularity[2];                                              // Word 98 - 99
     WORD Total_Number_of_User_Addressable_Sectors_for_the_48_bit_Address_feature_set[4];    // Word 100 - 103
     WORD Streaming_Transfer_Time_PIO;                                                       // Word 104
-    WORD Reserved_8;  // ??                                                                      // Word 105
-    WORD Physical_sector_size_Logical_Sector_Size;                                          // Word 106
+    WORD Max_num_of_512_byte_blocks_of_LBA_Range_Entries_per_DATA_SET_MANAGEMENT_command;   // Word 105
+
+    struct                                           // Word 106
+    {
+        USHORT a0 : 4;
+        USHORT : 8;
+        USHORT a12 : 1;
+        USHORT a13 : 1;
+        USHORT a14 : 1;
+        USHORT a15 : 1;
+    } Physical_sector_size_Logical_Sector_Size;
+
     WORD Inter_seek_delay_for_ISO_7779_acoustic_testing_in_microseconds;                    // Word 107
-    WORD xyz_1;                                                                             // Word 108
-    WORD xyz_2;                                                                             // Word 109
-    WORD xyz_3;                                                                             // Word 110
-    WORD xyz_4;                                                                             // Word 111
-    WORD Reserved_for_world_wide_name_extension_to_128_bits[4];                                // Word 112 - 115
-    WORD Reserved_for_INCITS_TR37_2004;                      // ??                          // Word 116
-    WORD Words_per_Logical_Sector[2];                                                          // Word 117 - 118
+
+    WORD World_wide_name[4];                                                                // Word 108 - 111
+    WORD Reserved_for_world_wide_name_extension_to_128_bits[4];                             // Word 112 - 115
+    WORD Obsolete_12;                                                                      // Word 116
+    WORD Logical_sector_size[2];                                                      // Word 117 - 118
     WORD Supported_Settings;                                                                // Word 119
     WORD Command_set_feature_enabled_supported_4;                                           // Word 120
     WORD Reserved_for_expanded_supportedand_enabled_settings[6];                               // Word 121 - 126
     WORD Obsolete_8;                                                                        // Word 127
-    WORD Security_status;                                                                   // Word 128
+
+    struct                                                                                   // Word 128
+    {
+        USHORT a0 : 1;
+        USHORT a1 : 2;
+        USHORT a3 : 1;
+        USHORT a4 : 1;
+        USHORT a5 : 1;
+        USHORT : 2;
+        USHORT a8 : 1;
+        USHORT : 7;
+    } Security_status;
+
     WORD Vendor_specific[31];                                                               // Word 129 - 159
     WORD Reserved_9[8];                                                                    // Word 160 - 167
-    WORD Device_Nominal_Form_Factor;                                                          // Word 168
-    WORD DATA_SET_MANAGEMENT_support;                                                          // Word 169
+    
+    struct                                                                                  // Word 168
+    {
+        USHORT a0 : 4;
+        USHORT : 12;
+    } Device_Nominal_Form_Factor;
+
+    struct                                                                                      // Word 169
+    {
+        USHORT a0 : 1;
+        USHORT : 15;
+    } DATA_SET_MANAGEMENT_support;
+
     WORD Additional_Product_Identifier[4];                                                   // Word 170 - 173
     WORD Reserved_10[2];                                                                    // Word 174 - 175
     WORD Current_media_serial_number[30];                                                   // Word 176 - 205
-    WORD SCT_Command_Transport;                                                             // Word 206
-    WORD Reserved_10[2];                                                                    // Word 207 - 208
-    WORD Alignment_of_logical_blocks_within_a_larger_physical_block;                        // Word 209
+    
+    struct                                                             // Word 206
+    {
+        USHORT a0 : 1;
+        USHORT : 1;
+        USHORT a2 : 1;
+        USHORT a3 : 1;
+        USHORT a4 : 1;
+        USHORT a5 : 1;
+        USHORT : 6;
+        USHORT a12 : 4;
+    } SCT_Command_Transport;
+
+    WORD Reserved_11[2];                                                                    // Word 207 - 208
+
+    struct                                                                             // Word 209
+    {
+        USHORT a0 : 14;
+        USHORT a14 : 1;
+        USHORT a15 : 1;
+    } Alignment_of_logical_blocks_within_a_larger_physical_block;
+
     WORD Write_Read_Verify_Sector_Count_Mode_3_Only[2];                                     // Word 210 - 211
     WORD Verify_Sector_Count_Mode_2_Only[2];                                                // Word 212 - 213
     WORD Obsolete_9[3];                                                                     // Word 214 - 216
     WORD Nominal_media_rotation_rate;                                                       // Word 217
-    WORD Reserved_11;                                                                       // Word 218
-    WORD Obsolete_10;                                                                  // Word 219
+    WORD Reserved_12;                                                                       // Word 218
+    WORD Obsolete_11;                                                                  // Word 219
     WORD Write_Read_Verify_Mode;                                                             // Word 220
     WORD Reserved_13;                                                                       // Word 221
     
