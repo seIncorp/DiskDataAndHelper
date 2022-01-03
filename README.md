@@ -106,6 +106,7 @@ With this app, you can see all about used hard drivers also hidden data that Win
 - Additional data about Hard drives
 - HPA set
 - DCO set
+- NVMe support
 - cloning HDD
 - Free-fall Control feature if HDD support
 - IDENTIFY HDD DEVICE data (retriving all possible data about specific HDD)
