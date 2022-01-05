@@ -1,6 +1,32 @@
 #pragma once
 #include "main.h"
 
+#define QWORD   __int64
+
+
+/* ATA COMMANDS */
+#define READ_LOG_EXT_48 0x2f
+
+
+/* LOG ADDRESSES OF READ_LOG_EXT_48*/
+#define LOG_DIRECTORY_48                0x00
+#define EXT_COMP_SMART_ERROR_LOG_48     0x03
+#define DEVICE_STATISTICS_48            0x04
+
+
+/* DEVICE STATISTICS OF DEVICE_STATISTICS_48*/
+#define List_of_supported_log_pages         0x00
+#define General_Statistics                  0x01
+#define Free_Fall_Statistics                0x02
+#define Rotating_Media_Statistics           0x03
+#define General_Errors_Statistics           0x04
+#define Temperature_Statistics              0x05
+#define Transport_Statistics                0x06
+#define Solid_State_Device_Statistics       0x07
+
+
+
+
 typedef struct
 {
     WORD revision;                                          // Word 0
@@ -86,14 +112,16 @@ typedef struct
 
 typedef struct
 {
-    BYTE bFeaturesReg;
-    BYTE bSectorCountReg;
-    BYTE bSectorNumberReg;
-    BYTE bCylLowReg;
-    BYTE bCylHighReg;
-    BYTE bDriveHeadReg;
-    BYTE bCommandReg;
-    BYTE bReserved;
+    BYTE bFeaturesReg;          // 0
+    BYTE bSectorCountReg;       // 1
+
+    BYTE bSectorNumberReg;      // 2
+    BYTE bCylLowReg;            // 3
+    BYTE bCylHighReg;           // 4
+
+    BYTE bDriveHeadReg;         // 5
+    BYTE bCommandReg;           // 6
+    BYTE bReserved;             // 7
 } ATA_COMMAND;
 
 typedef struct
@@ -568,57 +596,763 @@ typedef struct
 
 } IDENTIFY_DEVICE_DATA;
 
+typedef struct
+{
+    BYTE vendor_specific_1[362];                                        // BYTE 0 - 361
+    BYTE Offline_data_collection_status;                                // BYTE 362
+
+    struct   // TODO: preveri ce dela pravilno                         // BYTE 363
+    {
+        BYTE a0 : 4;    // 0 - 3
+        BYTE a4 : 4;    // 4 - 7
+    } SelfTest_execution_status;
+
+    BYTE vendor_specific_2[2];                                          // BYTE 364 - 365
+    BYTE vendor_specific_3;                                             // BYTE 366
+
+    struct                             // BYTE 367
+    {
+        BYTE a0 : 1;
+        BYTE a1 : 1;
+        BYTE a2 : 1;
+        BYTE a3 : 1;
+        BYTE a4 : 1;
+        BYTE a5 : 1;
+        BYTE a6 : 1;
+        BYTE a7 : 1;
+    } Offline_data_collection_capability;
+
+    struct                                            // BYTE 368 - 369
+    {
+        BYTE a0 : 1;
+        BYTE a1 : 1;
+        BYTE : 6;
+    } SMART_capability_1;
+    BYTE SMART_capability_2;
+
+    BYTE Err_logging_capability;                                        // BYTE 370
+    BYTE vendor_specific_4;                                             // BYTE 371
+    BYTE ShortSelfTest_routine_recommended_polling_time_minutes;        // BYTE 372
+    BYTE ExtSelfRest_routine_recommended_polling_time_minutes;          // BYTE 373
+    BYTE ConveyanceSelfTest_routine_recommended_polling_time_minutes;   // BYTE 374
+    BYTE ExtSelfTest_routine_recommended_polling_time_minutes[2];       // BYTE 375 - 376
+    BYTE Reserved[9];                                                   // BYTE 377 - 385
+    BYTE vendor_specific_5[125];                                        // BYTE 386 - 510
+    BYTE Data_structure_checksum;                                       // BYTE 511
+} ATA_SMART_DATA;
+
+
+typedef struct
+{
+    BYTE version[2];                                // BYTE 0 - 1
+    BYTE num_log_pages_at_log_address_1;            // BYTE 2
+    BYTE reserved_1;                                // BYTE 3
+    BYTE num_log_pages_at_log_address_2;            // BYTE 4
+    BYTE reserved_2;                                // BYTE 5
+    BYTE num_log_pages_at_log_address_3;            // BYTE 6
+    BYTE reserved_3;                                // BYTE 7
+    BYTE num_log_pages_at_log_address_4;            // BYTE 8
+    BYTE reserved_4;                                // BYTE 9
+    BYTE num_log_pages_at_log_address_5;            // BYTE 10
+    BYTE reserved_5;                                // BYTE 2
+    BYTE num_log_pages_at_log_address_6;            // BYTE 2
+    BYTE reserved_6;                                // BYTE 2
+    BYTE num_log_pages_at_log_address_7;            // BYTE 2
+    BYTE reserved_61;                                // BYTE 2
+    BYTE num_log_pages_at_log_address_8;            // BYTE 2
+    BYTE reserved_7;                                // BYTE 2
+    BYTE num_log_pages_at_log_address_9;            // BYTE 2
+    BYTE reserved_8;                                // BYTE 2
+    BYTE num_log_pages_at_log_address_10;           // BYTE 2
+    BYTE reserved_9;                                // BYTE 2
+    BYTE num_log_pages_at_log_address_11;           // BYTE 2
+    BYTE reserved_10;                               // BYTE 2
+    BYTE num_log_pages_at_log_address_12;           // BYTE 2
+    BYTE reserved_11;                               // BYTE 2
+    BYTE num_log_pages_at_log_address_13;           // BYTE 2
+    BYTE reserved_12;                               // BYTE 2
+    BYTE num_log_pages_at_log_address_14;           // BYTE 2
+    BYTE reserved_13;                               // BYTE 2
+    BYTE num_log_pages_at_log_address_16;           // BYTE 2
+    BYTE reserved_14;                               // BYTE 2
+    BYTE num_log_pages_at_log_address_17;// BYTE 2
+    BYTE reserved_15;// BYTE 2
+    BYTE num_log_pages_at_log_address_18;// BYTE 2
+    BYTE reserved_16;// BYTE 2
+    BYTE num_log_pages_at_log_address_19;// BYTE 2
+    BYTE reserved_17;// BYTE 2
+    BYTE num_log_pages_at_log_address_20;// BYTE 2
+    BYTE reserved_18;// BYTE 2
+    BYTE num_log_pages_at_log_address_21;// BYTE 2
+    BYTE reserved_19;// BYTE 2
+    BYTE num_log_pages_at_log_address_22;// BYTE 2
+    BYTE reserved_20;// BYTE 2
+    BYTE num_log_pages_at_log_address_23;// BYTE 2
+    BYTE reserved_21;// BYTE 2
+    BYTE num_log_pages_at_log_address_24;// BYTE 2
+    BYTE reserved_22;// BYTE 2
+    BYTE num_log_pages_at_log_address_25;// BYTE 2
+    
 
 
 
-//typedef struct
-//{
-//    /*struct {
-//        USHORT a0 : 1;
-//        USHORT a1 : 1;
-//        USHORT a2 : 1;
-//        USHORT a3 : 1;
-//        USHORT a4 : 1;
-//        USHORT a5 : 1;
-//        USHORT a6 : 1;
-//        USHORT a7 : 1;
-//    } Error;
-//
-//    UCHAR Count;
-//    UCHAR LBA_1;
-//    UCHAR LBA_2;
-//    UCHAR LBA_3;
-//    UCHAR Device;
-//    UCHAR Status;*/
-//
-//    /*WORD Error;
-//
-//    WORD Sector_count;
-//    WORD LBA_1;
-//    WORD LBA_2;
-//    WORD LBA_3;
-//
-//    struct{
-//        USHORT a0 : 1;
-//        USHORT a1 : 1;
-//        USHORT a2 : 1;
-//        USHORT a3 : 1;
-//        USHORT a4 : 1;
-//        USHORT a5 : 1;
-//        USHORT a6 : 1;
-//        USHORT a7 : 1;
-//    } Device;
-//
-//    struct {
-//        USHORT a0 : 1;
-//        USHORT a1 : 1;
-//        USHORT a2 : 1;
-//        USHORT a3 : 1;
-//        USHORT a4 : 1;
-//        USHORT a5 : 1;
-//        USHORT a6 : 1;
-//        USHORT a7 : 1;
-//    } Status;*/
-//
-//    UCHAR Reserved;
-//} RESPONSE_DATA;
+
+
+
+} SMART_LOG_DIRECTORY;
+
+
+
+/* LOGS and STATISTICS*/
+
+// General Purpose Log Directory (GPL Log Address 00h)
+typedef struct
+{
+    struct                                      // BYTE 0 - 7
+    {
+        WORD w1;        
+        BYTE b3;
+        BYTE r4;
+        BYTE r5;
+        BYTE r6;
+        BYTE r7;
+        BYTE r8;
+    } Device_Statistics_Information_Header;
+
+    struct
+    {
+        unsigned __int64 d1 : 32;
+        unsigned __int64 r1 : 8;
+        unsigned __int64 r2 : 8;
+        unsigned __int64 r3 : 8;
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+        
+    } Lifetime_Power_On_Resets;
+
+    struct
+    {
+        unsigned __int64 d1 : 32;
+        unsigned __int64 r1 : 8;
+        unsigned __int64 r2 : 8;
+        unsigned __int64 r3 : 8;
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+
+    } Power_on_Hours;
+
+    struct
+    {
+        unsigned __int64 dw1 : 48;
+        unsigned __int64 : 8;
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Logical_Sectors_Written;
+
+    struct
+    {
+        unsigned __int64 dw1 : 48;
+        unsigned __int64 : 8;
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Number_of_Write_Commands;
+
+    struct
+    {
+        unsigned __int64 dw1 : 48;
+        unsigned __int64 : 8;
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Logical_Sectors_Read;
+
+    struct
+    {
+        unsigned __int64 dw1 : 48;
+        unsigned __int64 : 8;
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Number_of_Read_Commands;
+
+    struct
+    {
+        unsigned __int64 dw1 : 48;
+        unsigned __int64 : 8;
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Date_and_Time_TimeStamp;
+
+    unsigned __int64 reserved[56];
+
+} GENERAL_STATISTICS;
+
+typedef struct
+{
+    struct
+    {
+        unsigned __int64 q1 : 16;
+        unsigned __int64 q2 : 8;
+        unsigned __int64 q3 : 40;
+    } Device_Statistics_Information_Header;
+
+    struct
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Number_of_Free_Fall_Events_Detected;
+
+    struct
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Overlimit_Shock_Events;
+
+    unsigned __int64 reserved[61];
+
+} FREE_FALL_STATISTICS;
+
+typedef struct
+{
+    struct
+    {
+        unsigned __int64 q1 : 16;
+        unsigned __int64 q2 : 8;
+        unsigned __int64 q3 : 40;
+    } Device_Statistics_Information_Header;
+
+    struct
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Spindle_Motor_Power_on_Hours;
+
+    struct 
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Head_Flying_Hours;
+
+    struct 
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Head_Load_Events;
+
+    struct 
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Number_of_Reallocated_Logical_Sectors;
+
+    struct 
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Read_Recovery_Attempts;
+
+    struct 
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Number_of_Mechanical_Start_Failures;
+
+    struct 
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Number_of_Reallocation_Candidate_Logical_Sectors;
+
+    struct 
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Number_of_High_Priority_Unload_Events;
+
+    unsigned __int64 reserved[55];
+} ROTATING_MEDIA_STATISTICS;
+
+typedef struct
+{
+    struct
+    {
+        unsigned __int64 q1 : 16;
+        unsigned __int64 q2 : 8;
+        unsigned __int64 q3 : 40;
+    } Device_Statistics_Information_Header;
+
+    struct
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Number_of_Reported_Uncorrectable_Errors;
+
+    struct
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Number_of_Resets_Between_Command_Acceptanceand_Command_Completion;
+
+    unsigned __int64 reserved[61];
+
+} GENERAL_ERROR_STATISTICS;
+
+typedef struct
+{
+    struct
+    {
+        unsigned __int64 q1 : 16;
+        unsigned __int64 q2 : 8;
+        unsigned __int64 q3 : 40;
+    } Device_Statistics_Information_Header;
+
+    struct
+    {
+        unsigned __int64 q0 : 8;
+
+        unsigned __int64 r0 : 48;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Current_Temperature;
+
+    struct
+    {
+        unsigned __int64 q0 : 8;
+
+        unsigned __int64 r0 : 48;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Average_Short_Term_Temperature;
+
+    struct
+    {
+        unsigned __int64 q0 : 8;
+
+        unsigned __int64 r0 : 48;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Average_Long_Term_Temperature;
+
+    struct
+    {
+        unsigned __int64 q0 : 8;
+
+        unsigned __int64 r0 : 48;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Highest_Temperature;
+
+    struct
+    {
+        unsigned __int64 q0 : 8;
+
+        unsigned __int64 r0 : 48;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Lowest_Temperature;
+
+    struct
+    {
+        unsigned __int64 q0 : 8;
+
+        unsigned __int64 r0 : 48;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Highest_Average_Short_Term_Temperature;
+
+    struct
+    {
+        unsigned __int64 q0 : 8;
+
+        unsigned __int64 r0 : 48;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Lowest_Average_Short_Term_Temperature;
+
+    struct
+    {
+        unsigned __int64 q0 : 8;
+
+        unsigned __int64 r0 : 48;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Highest_Average_Long_Term_Temperature;
+
+    struct
+    {
+        unsigned __int64 q0 : 8;
+
+        unsigned __int64 r0 : 48;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Lowest_Average_Long_Term_Temperature;
+
+    struct
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Time_in_Over_Temperature;
+
+    struct
+    {
+        unsigned __int64 q0 : 8;
+
+        unsigned __int64 r0 : 48;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Specified_Maximum_Operating_Temperature;
+
+    struct
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Time_in_Under_Temperature;
+
+    struct
+    {
+        unsigned __int64 q0 : 8;
+
+        unsigned __int64 r0 : 48;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Specified_Minimum_Operating_Temperature;
+
+    unsigned __int64 reserved[50];
+
+} TEMPERATURE_STATISTICS;
+
+typedef struct
+{
+    struct
+    {
+        unsigned __int64 q1 : 16;
+        unsigned __int64 q2 : 8;
+        unsigned __int64 q3 : 40;
+    } Device_Statistics_Information_Header;
+
+    struct
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Number_of_hardware_resets;
+
+    struct
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Number_of_ASR_Events;
+
+    struct
+    {
+        unsigned __int64 q1 : 32;
+
+        unsigned __int64 r1 : 24;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    }  Number_of_Interface_CRC_Errors;
+
+    unsigned __int64 reserved[60];
+
+} TRANSPORT_STATISTICS;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
