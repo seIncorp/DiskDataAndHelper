@@ -442,20 +442,35 @@ public:
 
 
 
+    
 
 
-
-
+    // TODO: change WORD array to BYTE array
     int ATACommandCall(WORD data[], BYTE* arr)
     {
         BOOL bResult = FALSE;
         DWORD junk = 0;
         const unsigned int IDENTIFY_buffer_size = 512;
+        int flag_LBA = 0;
 
         switch (arr[6])
         {
-        case 0xEC:
 
+        case 0x2f:
+        case 0xc8:
+        case 0xe9:
+        case 0xe4:
+        case 0xe1:
+        case 0xe3:
+        case 0xa1:
+        case 0xe7:
+        case 0x90:
+        case 0xe5:
+        case 0x78:
+        case 0xEC:
+        case 0xB0:
+            //if (arr[0] == 0xDA)
+              //  flag_LBA = 1;
 
         case 0xB1:  // DCO CALL
         {
@@ -476,13 +491,14 @@ public:
             PTE.CurrentTaskFile[7] = arr[7];
 
             PTE.AtaFlags = ATA_FLAGS_DATA_IN | ATA_FLAGS_DRDY_REQUIRED;
+            //PTE.AtaFlags = ATA_FLAGS_DATA_IN | ATA_FLAGS_DRDY_REQUIRED | ATA_FLAGS_48BIT_COMMAND;
 
             DWORD BR = 0;
             bResult = DeviceIoControl(hDevice, IOCTL_ATA_PASS_THROUGH, &PTE, sizeof(Buffer), &PTE, sizeof(Buffer), &BR, 0);
 
             if (bResult)
             {
-                printResponseData(PTE.CurrentTaskFile, 0, (wchar_t*)L"asd");
+                printResponseData(PTE.CurrentTaskFile, 1, (wchar_t*)L"asd123");
 
                 for (int aa = 0; aa < 256; aa++)
                     data[aa] = *((WORD*)(Buffer + sizeof(ATA_PASS_THROUGH_EX)) + aa);
@@ -831,6 +847,26 @@ public:
 
 
 
+
+
+
+            wprintf(L"Commands and feature sets supported: %X -->  %X\n", *(data + 84), id_data->Commandsand_feature_sets_supported_3);
+            wprintf(L"\t0: %02X\n", id_data->Commandsand_feature_sets_supported_3.a0);
+            wprintf(L"\t1: %02X\n", id_data->Commandsand_feature_sets_supported_3.a1);
+            wprintf(L"\t4: %02X\n", id_data->Commandsand_feature_sets_supported_3.a4);
+            wprintf(L"\t5: %02X\n", id_data->Commandsand_feature_sets_supported_3.a5);
+            wprintf(L"\t6: %02X\n", id_data->Commandsand_feature_sets_supported_3.a6);
+            wprintf(L"\t8: %02X\n", id_data->Commandsand_feature_sets_supported_3.a8);
+            wprintf(L"\t13: %02X\n", id_data->Commandsand_feature_sets_supported_3.a13);
+            wprintf(L"\t14: %02X\n", id_data->Commandsand_feature_sets_supported_3.a14);
+            wprintf(L"\t15: %02X\n", id_data->Commandsand_feature_sets_supported_3.a15);
+
+            wprintf(L"\t--5: %02X\n", id_data->Command_set_feature_enabled_supported_3.a5);
+
+
+            // TODO: continue...
+
+
             wprintf(L"\n");
             wprintf(L"\n");
             wprintf(L"\n");
@@ -865,6 +901,1184 @@ public:
 
         }
     }
+
+    /***********************************************************************************************/
+    /* SMART functions (Self-Monitoring, Analysis, and Reporting Technology (SMART) feature set)  */
+    void GetATACommandResponse_SMART_READ_data()    // DONE!! <-- dodaj se za app komando
+    {
+        ATA_COMMAND id_get{ 0x00 };
+
+        id_get.bFeaturesReg = 0xD0;
+        id_get.bSectorCountReg = 0x00;
+        id_get.bSectorNumberReg = 0x00;
+        id_get.bCylLowReg = 0x4F;
+        id_get.bCylHighReg = 0xC2;
+        id_get.bDriveHeadReg = 0x00;
+        id_get.bCommandReg = 0xB0;
+        
+
+        
+        
+
+        BYTE data[512]{ 0 };
+        if (ATACommandCall((WORD *)data, (BYTE*)&id_get) == 0)
+        {
+            /*for (int ii = 0; ii < 512; ii++)
+                wprintf(L"%X ", *(data+ii));
+            ee;
+            ee;*/
+
+            //data[363] = 0xc3;
+
+            ATA_SMART_DATA* asd = (ATA_SMART_DATA*)data;
+
+
+            
+
+            wprintf(L"Vendor specific: \n");
+            for (int ii = 0, aa = 0; ii < 362; ii++, aa++)
+            {
+                if (aa == 30)
+                {
+                    ee;
+                    aa = 0;
+                }
+                wprintf(L"0x%02X ", asd->vendor_specific_1[ii]);
+            }
+            ee;
+
+
+            // TODO: add option to show vendor specific
+            wprintf(L"Off-line collection status: 0x%02X\n", asd->Offline_data_collection_status);
+            switch (asd->Offline_data_collection_status)
+            {
+                case 0x00:
+
+                case 0x80:
+                    wprintf(L"\tOff-line data collection activity was never started.\n");
+                break;
+
+                case 0x01:
+                    wprintf(L"\tReserved\n");
+                break;
+
+                case 0x02:
+                case 0x82:
+                    wprintf(L"\tOff-line data collection activity was completed without error.\n");
+                break;
+
+                case 0x03:
+                    wprintf(L"\tOff-line activity in progress.\n");
+                break;
+
+                case 0x04:
+                case 0x84:
+                    wprintf(L"\tOff-line data collection activity was suspended by an interrupting command from host.\n");
+                break;
+
+                case 0x05:
+                case 0x85:
+                    wprintf(L"\tOff-line data collection activity was aborted by an interrupting command from host.\n");
+                break;
+
+                case 0x06:
+                case 0x86:
+                    wprintf(L"\tOff-line data collection activity was aborted by the device with a fatal error.\n");
+                break;
+            }
+            wprintf(L"\n");
+
+            wprintf(L"Self-test execution status: 0x%02X\n", asd->SelfTest_execution_status);
+            wprintf(L"\tPercent Self-Test Remaining: [0x%02X] %d\n", asd->SelfTest_execution_status.a0, asd->SelfTest_execution_status.a0);
+            wprintf(L"\tSelf-test Execution Status: [0x%02X]\n", asd->SelfTest_execution_status.a4);
+            switch (asd->SelfTest_execution_status.a4)
+            {
+                case 0x00:
+                    wprintf(L"\t\tIndicates a previous self-test routine completed without error or no self-test status is available\n");
+                break;
+
+                case 0x01:
+                    wprintf(L"\t\tThe self-test routine was aborted by the host\n");
+                break;
+
+                case 0x02:
+                    wprintf(L"\t\tThe self-test routine was interrupted by the host with a hardware or software reset\n");
+                break;
+
+                case 0x03:
+                    wprintf(L"\t\tA fatal error or unknown test error occurred while the device was executing its self-test routine and the device was unable to complete the self - test routine\n");
+                break;
+
+                case 0x04:
+                    wprintf(L"\t\tThe previous self-test completed having a test element that failed and the test element that failed is not known.\n");
+                break;
+
+                case 0x05:
+                    wprintf(L"\t\t The previous self-test completed having the electrical element of the test failed.\n");
+                break;
+
+                case 0x06:
+                    wprintf(L"\t\tThe previous self-test completed having the servo and/or seek test element of the test failed.\n");
+                break;
+
+                case 0x07:
+                    wprintf(L"\t\tThe previous self-test completed having the read element of the test failed.\n");
+                break;
+
+                case 0x08:
+                    wprintf(L"\t\tThe previous self-test completed having a test element that failed and the device is suspected of having handling damage.\n");
+                break;
+
+                case 0x0F:
+                    wprintf(L"\t\tSelf-test routine in progress.\n");
+                break;
+            }
+            wprintf(L"\n");
+            
+            wprintf(L"Off-line data collection capability: 0x%02X\n", asd->Offline_data_collection_capability);
+            wprintf(L"\tSMART EXECUTE OFF-LINE IMMEDIATE: [%s]\n", asd->Offline_data_collection_capability.a0 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tABORT/RESTART OFF-LINE BY HOST: [%s]\n", asd->Offline_data_collection_capability.a2 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tOFF-LINE READ SCANNING IMPLEMENTED: [%s]\n", asd->Offline_data_collection_capability.a3 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSELF-TEST IMPLEMENTED: [%s]\n", asd->Offline_data_collection_capability.a4 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tCONVEYANCE SELF-TEST IMPLEMENTED: [%s]\n", asd->Offline_data_collection_capability.a5 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSELECTIVE SELF-TEST IMPLEMENTED: [%s]\n", asd->Offline_data_collection_capability.a6 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\n");
+
+            wprintf(L"SMART capability: 0x%02X%02X\n", asd->SMART_capability_2, asd->SMART_capability_1);
+            wprintf(L"\tdevice saves SMART data prior to going into a power saving mode (i.e., Idle, Standby, or Sleep) or upon return to Active mode or Idle mode from a Standby mode: [%s]\n", asd->SMART_capability_1.a0 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\tSMART ENABLE/DISABLE ATTRIBUTE AUTOSAVE: [%s]\n", asd->SMART_capability_1.a1 == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\n");
+
+            wprintf(L"Error logging capability: [%s]\n", asd->Err_logging_capability == 1 ? L"TRUE" : L"FALSE");
+            wprintf(L"\n");
+
+            wprintf(L"Short self-test routine recommended polling time (in minutes): %d\n", asd->ShortSelfTest_routine_recommended_polling_time_minutes);
+            wprintf(L"\n");
+
+            wprintf(L"Extended self-test routine recommended polling time in minutes: %d\n", asd->ExtSelfRest_routine_recommended_polling_time_minutes);
+            wprintf(L"\n");
+
+            wprintf(L"Conveyance self-test routine recommended polling time in minutes: %d\n", asd->ConveyanceSelfTest_routine_recommended_polling_time_minutes);
+            wprintf(L"\n");
+
+            wprintf(L"Extended self-test routine recommended polling time in minutes: 0x%02X%02X\n", asd->ExtSelfTest_routine_recommended_polling_time_minutes[0], asd->ExtSelfTest_routine_recommended_polling_time_minutes[0]);
+            wprintf(L"\n");
+
+            wprintf(L"Vendor specific: \n");
+            for (int ii = 0, aa = 0; ii < 125; ii++, aa++)
+            {
+                if (aa == 30)
+                {
+                    ee;
+                    aa = 0;
+                }
+                wprintf(L"0x%02X ", asd->vendor_specific_5[ii]);
+            }
+            wprintf(L"\n");
+
+            wprintf(L"Data structure checksum: 0x%02X\n", asd->Data_structure_checksum);
+            wprintf(L"\n");
+        }
+    }
+
+    void GetATACommandResponse_SMART_READ_LOG_data()
+    {
+        ATA_COMMAND id_get{ 0x00 };
+
+        id_get.bFeaturesReg = 0xD5;         // 0
+        id_get.bSectorCountReg = 0x01;      // 1    <-- number of log pages 
+        id_get.bSectorNumberReg = 0x04;     // 2    <-- LOG ADDRESS field
+        id_get.bCylLowReg = 0x4F;           // 3
+        id_get.bCylHighReg = 0xC2;          // 4
+        id_get.bDriveHeadReg = 0x01;        // 5
+        id_get.bCommandReg = 0xB0;          // 6
+
+        // TODO: naredi tabelo za  Log directory
+        // TODO: razmisli kaj bi s tem naredil glede: SCT Command/Status, SCT Data Transfer, HOST specific read data
+        // TODO: naredi se za ostale loge: Device Statistics, ...
+
+        BYTE data[512];
+        if (ATACommandCall((WORD*)data, (BYTE*)&id_get) == 0)
+        {
+            if (id_get.bSectorNumberReg == 0x00)
+            {
+                for (int ii = 2, a = 0, c = 1; ii < 512; ii++, a++)
+                {
+                    if (a == 10)
+                    {
+                        a = 0;
+                        ee;
+                    }
+
+                    if (*(data + ii) > 0x00)
+                    {
+                        wprintf(L"[BYTE: %d - ADD: %d (0x%02X)] -> 0x%02X\n", ii, c, c, *(data + ii));
+                    }
+
+                    if (ii % 2 == 0)
+                        c++;
+                }
+                ee;
+                ee;
+                
+                SMART_LOG_DIRECTORY* sld = (SMART_LOG_DIRECTORY*)data;
+
+                wprintf(L"Number of log pages at log address 1: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_1, data[2]);
+                wprintf(L"Number of log pages at log address 2: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_2, data[4]);
+                wprintf(L"Number of log pages at log address 3: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_3, data[6]);
+                wprintf(L"Number of log pages at log address 4: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_4, data[8]);
+                wprintf(L"Number of log pages at log address 5: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_5, data[10]);
+                wprintf(L"Number of log pages at log address 6: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[12]);
+                wprintf(L"Number of log pages at log address 7: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[14]);
+                wprintf(L"Number of log pages at log address 8: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[16]);
+                wprintf(L"Number of log pages at log address 9: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[18]);
+                wprintf(L"Number of log pages at log address 10: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[20]);
+                wprintf(L"Number of log pages at log address 11: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[22]);
+                wprintf(L"Number of log pages at log address 12: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[24]);
+                wprintf(L"Number of log pages at log address 13: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[26]);
+                wprintf(L"Number of log pages at log address 14: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[28]);
+                wprintf(L"Number of log pages at log address 15: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[30]);
+                wprintf(L"Number of log pages at log address 16: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[32]);
+                wprintf(L"Number of log pages at log address 17: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[34]);
+                wprintf(L"Number of log pages at log address 18: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[36]);
+                wprintf(L"Number of log pages at log address 19: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[38]);
+                wprintf(L"Number of log pages at log address 20: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[40]);
+                wprintf(L"Number of log pages at log address 21: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[42]);
+                wprintf(L"Number of log pages at log address 22: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[44]);
+                wprintf(L"Number of log pages at log address 23: 0x%02X  0x%02X\n", sld->num_log_pages_at_log_address_6, data[46]);
+                wprintf(L"Number of log pages at log address 24:   0x%02X\n", data[48]);
+                wprintf(L"Number of log pages at log address 25:   0x%02X\n", data[50]);
+                wprintf(L"Number of log pages at log address 26:   0x%02X\n", data[52]);
+                wprintf(L"Number of log pages at log address 27:   0x%02X\n", data[54]);
+                wprintf(L"Number of log pages at log address 28:   0x%02X\n", data[56]);
+                wprintf(L"Number of log pages at log address 29:   0x%02X\n", data[58]);
+                wprintf(L"Number of log pages at log address 30:   0x%02X\n", data[60]);
+                wprintf(L"Number of log pages at log address 31:   0x%02X\n", data[62]);
+                wprintf(L"Number of log pages at log address 32:   0x%02X\n", data[64]);
+                wprintf(L"Number of log pages at log address 33:   0x%02X\n", data[66]);
+                wprintf(L"Number of log pages at log address 34:   0x%02X\n", data[68]);
+                wprintf(L"Number of log pages at log address 35:   0x%02X\n", data[70]);
+                wprintf(L"Number of log pages at log address 36:   0x%02X\n", data[72]);
+                wprintf(L"Number of log pages at log address 37:   0x%02X\n", data[74]);
+                wprintf(L"Number of log pages at log address 38:   0x%02X\n", data[76]);
+                wprintf(L"Number of log pages at log address 39:   0x%02X\n", data[78]);
+                wprintf(L"Number of log pages at log address 40:   0x%02X\n", data[80]);
+                wprintf(L"Number of log pages at log address 41:   0x%02X\n", data[82]);
+            }
+            else
+            {
+                for (int ii = 0, a = 0; ii < 512; ii++, a++)
+                {
+                    if (a == 30)
+                    {
+                        a = 0;
+                        ee;
+                    }
+                    wprintf(L"%02X ", *(data + ii));
+                }
+                ee;
+                ee;
+
+
+            }
+
+        }
+    }
+
+    // TODO: SMART EXECUTE OFF-LINE IMMEDIATE (p. 280)
+
+    void GetATACommandResponse_SMART_RETURN_STATUS_data()
+    {
+        ATA_COMMAND id_get{ 0x00 };
+
+        id_get.bFeaturesReg = 0xDA;         // 0
+        id_get.bSectorCountReg = 0x00;      // 1    <-- number of log pages 
+        id_get.bSectorNumberReg = 0x00;     // 2    <-- LOG ADDRESS field
+        id_get.bCylLowReg = 0x4F;           // 3
+        id_get.bCylHighReg = 0xC2;          // 4
+        id_get.bDriveHeadReg = 0x01;        // 5
+        id_get.bCommandReg = 0xB0;          // 6
+
+        // TODO: naredi tabelo za  Log directory
+        // TODO: razmisli kaj bi s tem naredil glede: SCT Command/Status, SCT Data Transfer, HOST specific read data
+        // TODO: naredi se za ostale loge: Device Statistics, ...
+
+        BYTE data[512];
+        if (ATACommandCall((WORD*)data, (BYTE*)&id_get) == 0)
+        {
+            /*for (int ii = 0, a = 0; ii < 512; ii++, a++)
+            {
+                if (a == 30)
+                {
+                    a = 0;
+                    ee;
+                }
+                wprintf(L"%02X ", *(data + ii));
+            }
+            ee;
+            ee;*/
+        }
+
+    }
+
+    // TODO: SMART WRITE LOG (p. 291)
+
+
+    /***********************************************************************************************/
+    /* Accessible Max Address Configuration  */
+
+    // TODO: GET NATIVE MAX ADDRESS EXT (p. 98)
+    void GetATACommandResponse_GET_NATIVE_MAX_ADDRESS_EXT_data()
+    {
+        ATA_COMMAND id_get{ 0x00 };
+
+        id_get.bFeaturesReg = 0x00;         // 0
+        id_get.bSectorCountReg = 0x00;      // 1    <-- number of log pages 
+        id_get.bSectorNumberReg = 0x00;     // 2    <-- LOG ADDRESS field
+        id_get.bCylLowReg = 0x00;           // 3
+        id_get.bCylHighReg = 0x00;          // 4
+        id_get.bDriveHeadReg = 0x01;        // 5
+        id_get.bCommandReg = 0x78;          // 6
+
+        // TODO: naredi tabelo za  Log directory
+        // TODO: razmisli kaj bi s tem naredil glede: SCT Command/Status, SCT Data Transfer, HOST specific read data
+        // TODO: naredi se za ostale loge: Device Statistics, ...
+
+        BYTE data[512];
+        if (ATACommandCall((WORD*)data, (BYTE*)&id_get) == 0)
+        {
+            /*for (int ii = 0, a = 0; ii < 512; ii++, a++)
+            {
+                if (a == 30)
+                {
+                    a = 0;
+                    ee;
+                }
+                wprintf(L"%02X ", *(data + ii));
+            }
+            ee;
+            ee;*/
+        }
+
+    }
+     
+     
+    // TODO: SET ACCESSIBLE MAX ADDRESS EXT (p. 99)
+    // TODO: FREEZE ACCESSIBLE MAX ADDRESS EXT (p. 100)
+
+    /***********************************************************************************************/
+    /* OTHER FUNCTIONS  */
+
+    void GetATACommandResponse_CHECK_POWER_MODE_data()
+    {
+        ATA_COMMAND id_get{ 0x00 };
+
+        id_get.bFeaturesReg = 0x00;         // 0
+        id_get.bSectorCountReg = 0x00;      // 1    <-- number of log pages 
+        id_get.bSectorNumberReg = 0x00;     // 2    <-- LOG ADDRESS field
+        id_get.bCylLowReg = 0x00;           // 3
+        id_get.bCylHighReg = 0x00;          // 4
+        id_get.bDriveHeadReg = 0x01;        // 5
+        id_get.bCommandReg = 0xe5;          // 6
+
+        
+
+        BYTE data[512];
+        if (ATACommandCall((WORD*)data, (BYTE*)&id_get) == 0)
+        {
+            /*for (int ii = 0, a = 0; ii < 512; ii++, a++)
+            {
+                if (a == 30)
+                {
+                    a = 0;
+                    ee;
+                }
+                wprintf(L"%02X ", *(data + ii));
+            }
+            ee;
+            ee;*/
+        }
+
+    }
+
+    void GetATACommandResponse_EXECUTE_DEVICE_DIAGNOSTIC_data()
+    {
+        ATA_COMMAND id_get{ 0x00 };
+
+        id_get.bFeaturesReg = 0x00;         // 0
+        id_get.bSectorCountReg = 0x00;      // 1    <-- number of log pages 
+        id_get.bSectorNumberReg = 0x00;     // 2    <-- LOG ADDRESS field
+        id_get.bCylLowReg = 0x00;           // 3
+        id_get.bCylHighReg = 0x00;          // 4
+        id_get.bDriveHeadReg = 0x01;        // 5
+        id_get.bCommandReg = 0x90;          // 6
+
+       
+
+        BYTE data[512];
+        if (ATACommandCall((WORD*)data, (BYTE*)&id_get) == 0)
+        {
+            /*for (int ii = 0, a = 0; ii < 512; ii++, a++)
+            {
+                if (a == 30)
+                {
+                    a = 0;
+                    ee;
+                }
+                wprintf(L"%02X ", *(data + ii));
+            }
+            ee;
+            ee;*/
+        }
+
+    }
+
+    void GetATACommandResponse_FLUSH_CACHE_data()
+    {
+        ATA_COMMAND id_get{ 0x00 };
+
+        id_get.bFeaturesReg = 0x00;         // 0
+        id_get.bSectorCountReg = 0x00;      // 1    <-- number of log pages 
+        id_get.bSectorNumberReg = 0x00;     // 2    <-- LOG ADDRESS field
+        id_get.bCylLowReg = 0x00;           // 3
+        id_get.bCylHighReg = 0x00;          // 4
+        id_get.bDriveHeadReg = 0x01;        // 5
+        id_get.bCommandReg = 0xe7;          // 6
+
+        
+
+        BYTE data[512];
+        if (ATACommandCall((WORD*)data, (BYTE*)&id_get) == 0)
+        {
+            /*for (int ii = 0, a = 0; ii < 512; ii++, a++)
+            {
+                if (a == 30)
+                {
+                    a = 0;
+                    ee;
+                }
+                wprintf(L"%02X ", *(data + ii));
+            }
+            ee;
+            ee;*/
+        }
+
+    }
+
+    void GetATACommandResponse_IDLE_data()
+    {
+        ATA_COMMAND id_get{ 0x00 };
+
+        id_get.bFeaturesReg = 0x00;         // 0
+        id_get.bSectorCountReg = 0x00;      // 1    <-- number of log pages 
+        id_get.bSectorNumberReg = 0x00;     // 2    <-- LOG ADDRESS field
+        id_get.bCylLowReg = 0x00;           // 3
+        id_get.bCylHighReg = 0x00;          // 4
+        id_get.bDriveHeadReg = 0x01;        // 5
+        id_get.bCommandReg = 0xe3;          // 6
+
+        // TODO: dodaj se za timer
+
+        BYTE data[512];
+        if (ATACommandCall((WORD*)data, (BYTE*)&id_get) == 0)
+        {
+            /*for (int ii = 0, a = 0; ii < 512; ii++, a++)
+            {
+                if (a == 30)
+                {
+                    a = 0;
+                    ee;
+                }
+                wprintf(L"%02X ", *(data + ii));
+            }
+            ee;
+            ee;*/
+        }
+
+    }
+
+    void GetATACommandResponse_IDLE_IMMEDIATE_data()
+    {
+        ATA_COMMAND id_get{ 0x00 };
+
+        id_get.bFeaturesReg = 0x00;         // 0
+        id_get.bSectorCountReg = 0x00;      // 1    <-- number of log pages 
+        id_get.bSectorNumberReg = 0x00;     // 2    <-- LOG ADDRESS field
+        id_get.bCylLowReg = 0x00;           // 3
+        id_get.bCylHighReg = 0x00;          // 4
+        id_get.bDriveHeadReg = 0x01;        // 5
+        id_get.bCommandReg = 0xe1;          // 6
+
+        // TODO: dodaj se za unload
+
+        BYTE data[512];
+        if (ATACommandCall((WORD*)data, (BYTE*)&id_get) == 0)
+        {
+            /*for (int ii = 0, a = 0; ii < 512; ii++, a++)
+            {
+                if (a == 30)
+                {
+                    a = 0;
+                    ee;
+                }
+                wprintf(L"%02X ", *(data + ii));
+            }
+            ee;
+            ee;*/
+        }
+
+    }
+    
+    /***********************************************************************************************/
+    /* READ FUNCTIONS  */
+
+
+    void GetATACommandResponse_READ_BUFFER_data()
+    {
+        ATA_COMMAND id_get{ 0x00 };
+
+        id_get.bFeaturesReg = 0x00;         // 0
+        id_get.bSectorCountReg = 0x00;      // 1    <-- number of log pages 
+        id_get.bSectorNumberReg = 0x00;     // 2    <-- LOG ADDRESS field
+        id_get.bCylLowReg = 0x00;           // 3
+        id_get.bCylHighReg = 0x00;          // 4
+        id_get.bDriveHeadReg = 0x01;        // 5
+        id_get.bCommandReg = 0xe4;          // 6
+
+        // TODO: dodaj se za unload
+
+        BYTE data[512];
+        if (ATACommandCall((WORD*)data, (BYTE*)&id_get) == 0)
+        {
+            for (int ii = 0, a = 0; ii < 512; ii++, a++)
+            {
+                if (a == 30)
+                {
+                    a = 0;
+                    ee;
+                }
+                wprintf(L"%02X ", *(data + ii));
+            }
+            ee;
+            ee;
+        }
+
+    }
+
+    void GetATACommandResponse_READ_DMA_data()
+    {
+        ATA_COMMAND id_get{ 0x00 };
+
+        id_get.bFeaturesReg = 0x00;         // 0
+        id_get.bSectorCountReg = 0x01;      // 1    <-- number of log pages 
+        id_get.bSectorNumberReg = 0x0a;     // 2    <-- LOG ADDRESS field
+        id_get.bCylLowReg = 0x00;           // 3
+        id_get.bCylHighReg = 0x00;          // 4
+        id_get.bDriveHeadReg = 0x01;        // 5
+        id_get.bCommandReg = 0xc8;          // 6
+
+        // TODO: ugotovi prave velikosti logical sector-ja
+
+        BYTE data[512];
+        if (ATACommandCall((WORD*)data, (BYTE*)&id_get) == 0)
+        {
+            for (int ii = 0, a = 0; ii < 512; ii++, a++)
+            {
+                if (a == 30)
+                {
+                    a = 0;
+                    ee;
+                }
+                wprintf(L"%02X ", *(data + ii));
+            }
+            ee;
+            ee;
+        }
+
+    }
+
+    // TODO: READ DMA EXT
+
+    // TODO: READ FPDMA QUEUED
+
+
+    int ATACommandCall_v2(BYTE data_out[], int data_out_size, ATA_COMMAND PTF, ATA_COMMAND CTF, int is48bit)
+    {
+        BOOL bResult = FALSE;
+        DWORD junk = 0;
+        const int size = 512;
+
+
+        BYTE Buffer[size + sizeof(ATA_PASS_THROUGH_EX)] = { 0 };
+        
+
+        ATA_PASS_THROUGH_EX& APTE = *(ATA_PASS_THROUGH_EX*)Buffer;
+        APTE.Length = sizeof(APTE);
+        APTE.TimeOutValue = 10;
+        APTE.DataTransferLength = data_out_size;
+        APTE.DataBufferOffset = sizeof(ATA_PASS_THROUGH_EX);
+
+        APTE.CurrentTaskFile[0] = CTF.bFeaturesReg;
+        APTE.CurrentTaskFile[1] = CTF.bSectorCountReg;
+        APTE.CurrentTaskFile[2] = CTF.bSectorNumberReg;
+        APTE.CurrentTaskFile[3] = CTF.bCylLowReg;
+        APTE.CurrentTaskFile[4] = CTF.bCylHighReg;
+        APTE.CurrentTaskFile[5] = CTF.bDriveHeadReg;
+        APTE.CurrentTaskFile[6] = CTF.bCommandReg;
+        APTE.CurrentTaskFile[7] = CTF.bReserved;
+
+        if (is48bit == 1)
+        {
+            APTE.PreviousTaskFile[0] = PTF.bFeaturesReg;
+            APTE.PreviousTaskFile[1] = PTF.bSectorCountReg;
+            APTE.PreviousTaskFile[2] = PTF.bSectorNumberReg;  
+            APTE.PreviousTaskFile[3] = PTF.bCylLowReg;  
+            APTE.PreviousTaskFile[4] = PTF.bCylHighReg;  
+            APTE.PreviousTaskFile[5] = PTF.bDriveHeadReg;
+            APTE.PreviousTaskFile[6] = PTF.bCommandReg;
+            APTE.PreviousTaskFile[7] = PTF.bReserved;
+        }
+
+
+        APTE.AtaFlags = ATA_FLAGS_DATA_IN | ATA_FLAGS_DRDY_REQUIRED;
+
+        if (is48bit == 1)
+            APTE.AtaFlags = APTE.AtaFlags | ATA_FLAGS_48BIT_COMMAND;
+
+        //std::cout << sizeof(APTE) << "  " << buffer_size << std::endl;
+
+        DWORD BR = 0;
+        //bResult = DeviceIoControl(hDevice, IOCTL_ATA_PASS_THROUGH, &APTE, sizeof(APTE), &APTE, sizeof(Buffer), &BR, 0);
+        bResult = DeviceIoControl(hDevice, IOCTL_ATA_PASS_THROUGH, &APTE, sizeof(Buffer), &APTE, sizeof(Buffer), &BR, 0);
+        if (bResult)
+        {
+            //  TODO: raje vrni pa se tam printa
+            printResponseData(APTE.CurrentTaskFile, 1, (wchar_t*)L"asd123");
+
+            for (int aa = 0; aa < (data_out_size); aa++)
+                data_out[aa] = *((Buffer + sizeof(ATA_PASS_THROUGH_EX)) + aa);
+            
+
+            //free(Buffer);
+            return 1;
+        }
+        else
+        {
+            printError(GetLastError(), L"ATACommandCall_v2");
+            
+            //free(Buffer);
+            return 0;
+        }
+
+    }
+
+    void GetATACommandResponse_READ_LOG_EXT_data(ATA_COMMAND PTF, ATA_COMMAND CTF, int is48bit)
+    {
+        BYTE data[512];
+ 
+        if (ATACommandCall_v2(data, 512, PTF, CTF, 1) == 1)
+        {
+            
+           for (int ii = 0, a = 0; ii < 512; ii++, a++)
+            {
+                if (a == 8)
+                {
+                    a = 0;
+                    ee;
+                }
+                wprintf(L"%02X ", *(data + ii));
+            }
+            ee;
+            ee;
+            
+            // TODO: naredi tako da se kliče samo tiste log-e ki so podprti
+
+            if (CTF.bCylLowReg == List_of_supported_log_pages)
+            {
+                LIST_OF_SUPPORTED_LOGS* gs = (LIST_OF_SUPPORTED_LOGS*)data;
+
+                wprintf(L"Device Statistics Information Header:   0x%016llX\n", gs->Device_Statistics_Information_Header);
+                wprintf(L"\tRevision number: %lu [0x%llX]\n", gs->Device_Statistics_Information_Header.q1, gs->Device_Statistics_Information_Header.q1);
+                wprintf(L"\tLog page number: %d [0x%llX]\n", gs->Device_Statistics_Information_Header.q2, gs->Device_Statistics_Information_Header.q2);
+               
+                wprintf(L"Number of entries (n) in the following list:   0x%X\n", gs->Number_of_entries_n_in_the_following_list);
+                
+                for (int ii = 0; ii < gs->Number_of_entries_n_in_the_following_list; ii++)
+                {
+                    wprintf(L"\tLog page number of %d supported Device Statistics log page (0x%02X):   0x%X\n", ii, ii, gs->Log_page_number[ii]);
+                }
+
+
+                wprintf(L"\n");
+            }
+
+            if (CTF.bCylLowReg == General_Statistics)
+            {
+                GENERAL_STATISTICS* gs = (GENERAL_STATISTICS*)data;
+
+                wprintf(L"Device Statistics Information Header:   0x%016llX\n", gs->Device_Statistics_Information_Header);
+                wprintf(L"\tRevision number: %lu [0x%X]\n", gs->Device_Statistics_Information_Header.w1, gs->Device_Statistics_Information_Header.w1);
+                wprintf(L"\tLog page number: %d [0x%X]\n", gs->Device_Statistics_Information_Header.b3, gs->Device_Statistics_Information_Header.b3);
+                wprintf(L"\n");
+
+                wprintf(L"Lifetime Power-On Resets:   0x%016llX\n", gs->Lifetime_Power_On_Resets);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Lifetime_Power_On_Resets.a7,
+                    gs->Lifetime_Power_On_Resets.a6,
+                    gs->Lifetime_Power_On_Resets.a5,
+                    gs->Lifetime_Power_On_Resets.a4,
+                    gs->Lifetime_Power_On_Resets.a3
+                );
+                wprintf(L"\tNumber of times that the device has processed a Power-On Reset event: %llu [0x%X]\n", gs->Lifetime_Power_On_Resets.d1, gs->Lifetime_Power_On_Resets.d1);
+                wprintf(L"\n");
+
+                wprintf(L"Power-on Hours:   0x%016llX\n", gs->Power_on_Hours);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Power_on_Hours.a7,
+                    gs->Power_on_Hours.a6,
+                    gs->Power_on_Hours.a5,
+                    gs->Power_on_Hours.a4,
+                    gs->Power_on_Hours.a3
+                );
+                wprintf(L"\tPower-on Hours: %llu [0x%X]\n", gs->Power_on_Hours.d1, gs->Power_on_Hours.d1);
+                wprintf(L"\n");
+
+                wprintf(L"Logical Sectors Written:   0x%016llX\n", gs->Logical_Sectors_Written);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Logical_Sectors_Written.a7,
+                    gs->Logical_Sectors_Written.a6,
+                    gs->Logical_Sectors_Written.a5,
+                    gs->Logical_Sectors_Written.a4,
+                    gs->Logical_Sectors_Written.a3
+                );
+                wprintf(L"\tLogical Sectors Written: %llu [0x%llX]\n", gs->Logical_Sectors_Written.dw1, gs->Logical_Sectors_Written.dw1);
+                wprintf(L"\n");
+
+                wprintf(L"Number of Write Commands:   0x%016llX\n", gs->Number_of_Write_Commands);
+                wprintf(L"\tDEVICE STATISTICS FLAGS:\n");
+                printfDeviceStatistics(
+                    gs->Number_of_Write_Commands.a7,
+                    gs->Number_of_Write_Commands.a6,
+                    gs->Number_of_Write_Commands.a5,
+                    gs->Number_of_Write_Commands.a4,
+                    gs->Number_of_Write_Commands.a3
+                );
+                wprintf(L"\tNumber of Write Commands: %llu [0x%llX]\n", gs->Number_of_Write_Commands.dw1, gs->Number_of_Write_Commands.dw1);
+                wprintf(L"\n");
+
+                wprintf(L"Logical Sectors Read:   0x%016llX\n", gs->Logical_Sectors_Read);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Logical_Sectors_Read.a7,
+                    gs->Logical_Sectors_Read.a6,
+                    gs->Logical_Sectors_Read.a5,
+                    gs->Logical_Sectors_Read.a4,
+                    gs->Logical_Sectors_Read.a3
+                );
+                wprintf(L"\tLogical Sectors Read: %llu [0x%llX]\n", gs->Logical_Sectors_Read.dw1, gs->Logical_Sectors_Read.dw1);
+                wprintf(L"\n");
+
+                wprintf(L"Number of Read Commands:   0x%016llX\n", gs->Number_of_Read_Commands);
+                wprintf(L"\tDEVICE STATISTICS FLAGS:\n");
+                printfDeviceStatistics(
+                    gs->Number_of_Read_Commands.a7,
+                    gs->Number_of_Read_Commands.a6,
+                    gs->Number_of_Read_Commands.a5,
+                    gs->Number_of_Read_Commands.a4,
+                    gs->Number_of_Read_Commands.a3
+                );
+                wprintf(L"\tNumber of Read Commands: %llu [0x%llX]\n", gs->Number_of_Read_Commands.dw1, gs->Number_of_Read_Commands.dw1);
+                wprintf(L"\n");
+
+                wprintf(L"Date and Time TimeStamp:   0x%016llX\n", gs->Date_and_Time_TimeStamp);
+                wprintf(L"\tDEVICE STATISTICS FLAGS:\n");
+                printfDeviceStatistics(
+                    gs->Date_and_Time_TimeStamp.a7,
+                    gs->Date_and_Time_TimeStamp.a6,
+                    gs->Date_and_Time_TimeStamp.a5,
+                    gs->Date_and_Time_TimeStamp.a4,
+                    gs->Date_and_Time_TimeStamp.a3
+                );
+                wprintf(L"\tDate and Time TimeStamp: %llu [0x%llX]\n", gs->Date_and_Time_TimeStamp.dw1, gs->Date_and_Time_TimeStamp.dw1);
+                wprintf(L"\n");
+            }
+
+            if (CTF.bCylLowReg == Free_Fall_Statistics)
+            {
+                FREE_FALL_STATISTICS* gs = (FREE_FALL_STATISTICS*)data;
+
+
+            }
+
+            if (CTF.bCylLowReg == Rotating_Media_Statistics)
+            {
+                ROTATING_MEDIA_STATISTICS* gs = (ROTATING_MEDIA_STATISTICS*)data;
+
+                wprintf(L"Device Statistics Information Header:   0x%016llX\n", gs->Device_Statistics_Information_Header);
+                wprintf(L"\tRevision number: %lu [0x%X]\n", gs->Device_Statistics_Information_Header.q1, gs->Device_Statistics_Information_Header.q1);
+                wprintf(L"\tLog page number: %d [0x%X]\n", gs->Device_Statistics_Information_Header.q2, gs->Device_Statistics_Information_Header.q2);
+                wprintf(L"\n");
+
+                wprintf(L"Spindle Motor Power-on Hours:   0x%016llX\n", gs->Spindle_Motor_Power_on_Hours);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Spindle_Motor_Power_on_Hours.a7,
+                    gs->Spindle_Motor_Power_on_Hours.a6,
+                    gs->Spindle_Motor_Power_on_Hours.a5,
+                    gs->Spindle_Motor_Power_on_Hours.a4,
+                    gs->Spindle_Motor_Power_on_Hours.a3
+                );
+                wprintf(L"\tSpindle Motor Power-on Hours: %llu [0x%X]\n", gs->Spindle_Motor_Power_on_Hours.q1, gs->Spindle_Motor_Power_on_Hours.q1);
+                wprintf(L"\n");
+
+                wprintf(L"Head Flying Hours:   0x%016llX\n", gs->Head_Flying_Hours);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Head_Flying_Hours.a7,
+                    gs->Head_Flying_Hours.a6,
+                    gs->Head_Flying_Hours.a5,
+                    gs->Head_Flying_Hours.a4,
+                    gs->Head_Flying_Hours.a3
+                );
+                wprintf(L"\tHead Flying Hours: %llu [0x%X]\n", gs->Head_Flying_Hours.q1, gs->Head_Flying_Hours.q1);
+                wprintf(L"\n");
+
+                wprintf(L"Head Load Events:   0x%016llX\n", gs->Head_Load_Events);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Head_Load_Events.a7,
+                    gs->Head_Load_Events.a6,
+                    gs->Head_Load_Events.a5,
+                    gs->Head_Load_Events.a4,
+                    gs->Head_Load_Events.a3
+                );
+                wprintf(L"\tHead Load Events: %llu [0x%X]\n", gs->Head_Load_Events.q1, gs->Head_Load_Events.q1);
+                wprintf(L"\n");
+
+                wprintf(L"Number of Reallocated Logical Sectors:   0x%016llX\n", gs->Number_of_Reallocated_Logical_Sectors);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Number_of_Reallocated_Logical_Sectors.a7,
+                    gs->Number_of_Reallocated_Logical_Sectors.a6,
+                    gs->Number_of_Reallocated_Logical_Sectors.a5,
+                    gs->Number_of_Reallocated_Logical_Sectors.a4,
+                    gs->Number_of_Reallocated_Logical_Sectors.a3
+                );
+                wprintf(L"\tNumber of Reallocated Logical Sectors: %llu [0x%X]\n", gs->Number_of_Reallocated_Logical_Sectors.q1, gs->Number_of_Reallocated_Logical_Sectors.q1);
+                wprintf(L"\n");
+
+                wprintf(L"Read Recovery Attempts:   0x%016llX\n", gs->Read_Recovery_Attempts);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Read_Recovery_Attempts.a7,
+                    gs->Read_Recovery_Attempts.a6,
+                    gs->Read_Recovery_Attempts.a5,
+                    gs->Read_Recovery_Attempts.a4,
+                    gs->Read_Recovery_Attempts.a3
+                );
+                wprintf(L"\tRead Recovery Attempts: %llu [0x%X]\n", gs->Read_Recovery_Attempts.q1, gs->Read_Recovery_Attempts.q1);
+                wprintf(L"\n");
+
+                wprintf(L"Number of Mechanical Start Failures:   0x%016llX\n", gs->Number_of_Mechanical_Start_Failures);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Number_of_Mechanical_Start_Failures.a7,
+                    gs->Number_of_Mechanical_Start_Failures.a6,
+                    gs->Number_of_Mechanical_Start_Failures.a5,
+                    gs->Number_of_Mechanical_Start_Failures.a4,
+                    gs->Number_of_Mechanical_Start_Failures.a3
+                );
+                wprintf(L"\tNumber of Mechanical Start Failures: %llu [0x%X]\n", gs->Number_of_Mechanical_Start_Failures.q1, gs->Number_of_Mechanical_Start_Failures.q1);
+                wprintf(L"\n");
+
+                wprintf(L"Number of Reallocation Candidate Logical Sectors:   0x%016llX\n", gs->Number_of_Reallocation_Candidate_Logical_Sectors);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Number_of_Reallocation_Candidate_Logical_Sectors.a7,
+                    gs->Number_of_Reallocation_Candidate_Logical_Sectors.a6,
+                    gs->Number_of_Reallocation_Candidate_Logical_Sectors.a5,
+                    gs->Number_of_Reallocation_Candidate_Logical_Sectors.a4,
+                    gs->Number_of_Reallocation_Candidate_Logical_Sectors.a3
+                );
+                wprintf(L"\tNumber of Reallocation Candidate Logical Sectors: %llu [0x%X]\n", gs->Number_of_Reallocation_Candidate_Logical_Sectors.q1, gs->Number_of_Reallocation_Candidate_Logical_Sectors.q1);
+                wprintf(L"\n");
+
+                wprintf(L"Number of High Priority Unload Events:   0x%016llX\n", gs->Number_of_High_Priority_Unload_Events);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Number_of_High_Priority_Unload_Events.a7,
+                    gs->Number_of_High_Priority_Unload_Events.a6,
+                    gs->Number_of_High_Priority_Unload_Events.a5,
+                    gs->Number_of_High_Priority_Unload_Events.a4,
+                    gs->Number_of_High_Priority_Unload_Events.a3
+                );
+                wprintf(L"\tNumber of High Priority Unload Events: %llu [0x%X]\n", gs->Number_of_High_Priority_Unload_Events.q1, gs->Number_of_High_Priority_Unload_Events.q1);
+                wprintf(L"\n");
+            }
+
+            if (CTF.bCylLowReg == General_Errors_Statistics)
+            {
+                GENERAL_ERROR_STATISTICS* gs = (GENERAL_ERROR_STATISTICS*)data;
+
+                wprintf(L"Device Statistics Information Header:   0x%016llX\n", gs->Device_Statistics_Information_Header);
+                wprintf(L"\tRevision number: %lu [0x%X]\n", gs->Device_Statistics_Information_Header.q1, gs->Device_Statistics_Information_Header.q1);
+                wprintf(L"\tLog page number: %d [0x%X]\n", gs->Device_Statistics_Information_Header.q2, gs->Device_Statistics_Information_Header.q2);
+                wprintf(L"\n");
+
+                wprintf(L"Number of Reported Uncorrectable Errors:   0x%016llX\n", gs->Number_of_Reported_Uncorrectable_Errors);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Number_of_Reported_Uncorrectable_Errors.a7,
+                    gs->Number_of_Reported_Uncorrectable_Errors.a6,
+                    gs->Number_of_Reported_Uncorrectable_Errors.a5,
+                    gs->Number_of_Reported_Uncorrectable_Errors.a4,
+                    gs->Number_of_Reported_Uncorrectable_Errors.a3
+                );
+                wprintf(L"\tNumber of Reported Uncorrectable Errors: %llu [0x%X]\n", gs->Number_of_Reported_Uncorrectable_Errors.q1, gs->Number_of_Reported_Uncorrectable_Errors.q1);
+                wprintf(L"\n");
+
+                wprintf(L"Number of Resets Between Command Acceptance and Command Completion:   0x%016llX\n", gs->Number_of_Resets_Between_Command_Acceptanceand_Command_Completion);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Number_of_Resets_Between_Command_Acceptanceand_Command_Completion.a7,
+                    gs->Number_of_Resets_Between_Command_Acceptanceand_Command_Completion.a6,
+                    gs->Number_of_Resets_Between_Command_Acceptanceand_Command_Completion.a5,
+                    gs->Number_of_Resets_Between_Command_Acceptanceand_Command_Completion.a4,
+                    gs->Number_of_Resets_Between_Command_Acceptanceand_Command_Completion.a3
+                );
+                wprintf(L"\tNumber of Resets Between Command Acceptance and Command Completion: %llu [0x%X]\n", gs->Number_of_Resets_Between_Command_Acceptanceand_Command_Completion.q1, gs->Number_of_Resets_Between_Command_Acceptanceand_Command_Completion.q1);
+                wprintf(L"\n");
+            }
+
+            if (CTF.bCylLowReg == Temperature_Statistics)
+            {
+                TEMPERATURE_STATISTICS* gs = (TEMPERATURE_STATISTICS*)data;
+                WCHAR cc = 248;
+
+                // TODO: preveri ce so prave enote za vsak prikaz
+
+                wprintf(L"Device Statistics Information Header:   0x%016llX\n", gs->Device_Statistics_Information_Header);
+                wprintf(L"\tRevision number: %lu [0x%X]\n", gs->Device_Statistics_Information_Header.q1, gs->Device_Statistics_Information_Header.q1);
+                wprintf(L"\tLog page number: %d [0x%X]\n", gs->Device_Statistics_Information_Header.q2, gs->Device_Statistics_Information_Header.q2);
+                wprintf(L"\n");
+
+                wprintf(L"Current Temperature:   0x%016llX\n", gs->Current_Temperature);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Current_Temperature.a7,
+                    gs->Current_Temperature.a6,
+                    gs->Current_Temperature.a5,
+                    gs->Current_Temperature.a4,
+                    gs->Current_Temperature.a3
+                );
+                wprintf(L"\tCurrent Temperature: %d\370C [0x%llX]\n", gs->Current_Temperature.q0,gs->Current_Temperature.q0);
+                wprintf(L"\n");
+
+                wprintf(L"Average Short Term Temperature:   0x%016llX\n", gs->Average_Short_Term_Temperature);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Average_Short_Term_Temperature.a7,
+                    gs->Average_Short_Term_Temperature.a6,
+                    gs->Average_Short_Term_Temperature.a5,
+                    gs->Average_Short_Term_Temperature.a4,
+                    gs->Average_Short_Term_Temperature.a3
+                );
+                wprintf(L"\tAverage Short Term Temperature: %d\370C [0x%llX]\n", gs->Average_Short_Term_Temperature.q0, gs->Average_Short_Term_Temperature.q0);
+                wprintf(L"\n");
+
+                wprintf(L"Average Long Term Temperature:   0x%016llX\n", gs->Average_Long_Term_Temperature);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Average_Long_Term_Temperature.a7,
+                    gs->Average_Long_Term_Temperature.a6,
+                    gs->Average_Long_Term_Temperature.a5,
+                    gs->Average_Long_Term_Temperature.a4,
+                    gs->Average_Long_Term_Temperature.a3
+                );
+                wprintf(L"\tAverage Long Term Temperature: %d\370C [0x%llX]\n", gs->Average_Long_Term_Temperature.q0, gs->Average_Long_Term_Temperature.q0);
+                wprintf(L"\n");
+
+                wprintf(L"Highest Temperature:   0x%016llX\n", gs->Highest_Temperature);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Highest_Temperature.a7,
+                    gs->Highest_Temperature.a6,
+                    gs->Highest_Temperature.a5,
+                    gs->Highest_Temperature.a4,
+                    gs->Highest_Temperature.a3
+                );
+                wprintf(L"\tHighest Temperature: %d\370C [0x%llX]\n", gs->Highest_Temperature.q0, gs->Highest_Temperature.q0);
+                wprintf(L"\n");
+
+                wprintf(L"Lowest Temperature:   0x%016llX\n", gs->Lowest_Temperature);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Lowest_Temperature.a7,
+                    gs->Lowest_Temperature.a6,
+                    gs->Lowest_Temperature.a5,
+                    gs->Lowest_Temperature.a4,
+                    gs->Lowest_Temperature.a3
+                );
+                wprintf(L"\tLowest Temperature: %d\370C [0x%llX]\n", gs->Lowest_Temperature.q0, gs->Lowest_Temperature.q0);
+                wprintf(L"\n");
+
+                wprintf(L"Highest Average Short Term Temperature:   0x%016llX\n", gs->Highest_Average_Short_Term_Temperature);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Highest_Average_Short_Term_Temperature.a7,
+                    gs->Highest_Average_Short_Term_Temperature.a6,
+                    gs->Highest_Average_Short_Term_Temperature.a5,
+                    gs->Highest_Average_Short_Term_Temperature.a4,
+                    gs->Highest_Average_Short_Term_Temperature.a3
+                );
+                wprintf(L"\tHighest Average Short Term Temperature: %d\370C [0x%llX]\n", gs->Highest_Average_Short_Term_Temperature.q0, gs->Highest_Average_Short_Term_Temperature.q0);
+                wprintf(L"\n");
+
+                wprintf(L"Lowest Average Short Term Temperature:   0x%016llX\n", gs->Lowest_Average_Short_Term_Temperature);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Lowest_Average_Short_Term_Temperature.a7,
+                    gs->Lowest_Average_Short_Term_Temperature.a6,
+                    gs->Lowest_Average_Short_Term_Temperature.a5,
+                    gs->Lowest_Average_Short_Term_Temperature.a4,
+                    gs->Lowest_Average_Short_Term_Temperature.a3
+                );
+                wprintf(L"\tLowest Average Short Term Temperature: %d\370C [0x%llX]\n", gs->Lowest_Average_Short_Term_Temperature.q0, gs->Lowest_Average_Short_Term_Temperature.q0);
+                wprintf(L"\n");
+
+                wprintf(L"Highest Average Long Term Temperature:   0x%016llX\n", gs->Highest_Average_Long_Term_Temperature);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Highest_Average_Long_Term_Temperature.a7,
+                    gs->Highest_Average_Long_Term_Temperature.a6,
+                    gs->Highest_Average_Long_Term_Temperature.a5,
+                    gs->Highest_Average_Long_Term_Temperature.a4,
+                    gs->Highest_Average_Long_Term_Temperature.a3
+                );
+                wprintf(L"\tHighest Average Long Term Temperature: %d\370C [0x%llX]\n", gs->Highest_Average_Long_Term_Temperature.q0, gs->Highest_Average_Long_Term_Temperature.q0);
+                wprintf(L"\n");
+
+                wprintf(L"Lowest Average Long Term Temperature:   0x%016llX\n", gs->Lowest_Average_Long_Term_Temperature);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Lowest_Average_Long_Term_Temperature.a7,
+                    gs->Lowest_Average_Long_Term_Temperature.a6,
+                    gs->Lowest_Average_Long_Term_Temperature.a5,
+                    gs->Lowest_Average_Long_Term_Temperature.a4,
+                    gs->Lowest_Average_Long_Term_Temperature.a3
+                );
+                wprintf(L"\tLowest Average Long Term Temperature: %d\370C [0x%llX]\n", gs->Lowest_Average_Long_Term_Temperature.q0, gs->Lowest_Average_Long_Term_Temperature.q0);
+                wprintf(L"\n");
+
+                wprintf(L"Time in Over-Temperature:   0x%016llX\n", gs->Time_in_Over_Temperature);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Time_in_Over_Temperature.a7,
+                    gs->Time_in_Over_Temperature.a6,
+                    gs->Time_in_Over_Temperature.a5,
+                    gs->Time_in_Over_Temperature.a4,
+                    gs->Time_in_Over_Temperature.a3
+                );
+                wprintf(L"\tTime in Over-Temperature: %d\370C [0x%llX]\n", gs->Time_in_Over_Temperature.q1, gs->Time_in_Over_Temperature.q1);
+                wprintf(L"\n");
+
+                wprintf(L"Specified Maximum Operating Temperature:   0x%016llX\n", gs->Specified_Maximum_Operating_Temperature);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Specified_Maximum_Operating_Temperature.a7,
+                    gs->Specified_Maximum_Operating_Temperature.a6,
+                    gs->Specified_Maximum_Operating_Temperature.a5,
+                    gs->Specified_Maximum_Operating_Temperature.a4,
+                    gs->Specified_Maximum_Operating_Temperature.a3
+                );
+                wprintf(L"\tSpecified Maximum Operating Temperature: %d\370C [0x%llX]\n", gs->Specified_Maximum_Operating_Temperature.q0, gs->Specified_Maximum_Operating_Temperature.q0);
+                wprintf(L"\n");
+
+                wprintf(L"Time in Under-Temperature:   0x%016llX\n", gs->Time_in_Under_Temperature);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Time_in_Under_Temperature.a7,
+                    gs->Time_in_Under_Temperature.a6,
+                    gs->Time_in_Under_Temperature.a5,
+                    gs->Time_in_Under_Temperature.a4,
+                    gs->Time_in_Under_Temperature.a3
+                );
+                wprintf(L"\tTime in Under-Temperature: %d\370C [0x%llX]\n", gs->Time_in_Under_Temperature.q1, gs->Time_in_Under_Temperature.q1);
+                wprintf(L"\n");
+
+                wprintf(L"Specified Minimum Operating Temperature:   0x%016llX\n", gs->Specified_Minimum_Operating_Temperature);
+                wprintf(L"\tDEVICE STATISTICS FLAGS: \n");
+                printfDeviceStatistics(
+                    gs->Specified_Minimum_Operating_Temperature.a7,
+                    gs->Specified_Minimum_Operating_Temperature.a6,
+                    gs->Specified_Minimum_Operating_Temperature.a5,
+                    gs->Specified_Minimum_Operating_Temperature.a4,
+                    gs->Specified_Minimum_Operating_Temperature.a3
+                );
+                wprintf(L"\tSpecified Minimum Operating Temperature: %d\370C [0x%llX]\n", gs->Specified_Minimum_Operating_Temperature.q0, gs->Specified_Minimum_Operating_Temperature.q0);
+                wprintf(L"\n");
+
+
+
+
+
+
+            }
+
+            if (CTF.bCylLowReg == Transport_Statistics)
+            {
+                TRANSPORT_STATISTICS* gs = (TRANSPORT_STATISTICS*)data;
+
+
+
+            }
+
+            if (CTF.bCylLowReg == Solid_State_Device_Statistics)
+            {
+                SOLID_STATE_DEVICE_STATISTICS* gs = (SOLID_STATE_DEVICE_STATISTICS*)data;
+
+
+
+
+
+
+
+
+
+            }
+        }
+        else
+        {
+            printError(GetLastError(), L"GetATACommandResponse_READ_LOG_EXT_data");
+
+            
+        }
+
+
+    }
+
+    void printfDeviceStatistics(BYTE f1,BYTE f2,BYTE f3,BYTE f4,BYTE f5)
+    {
+        wprintf(L"\t\tDEVICE STATISTIC SUPPORTED :   0x%X\n", f1);
+        wprintf(L"\t\tVALID VALUE:   0x%X\n", f2);
+        wprintf(L"\t\tNORMALIZED STATISTIC:   0x%X\n", f3);
+        wprintf(L"\t\tSTATISTIC SUPPORTS DSN :   0x%X\n", f4);
+        wprintf(L"\t\tMONITORED CONDITION MET :   0x%X\n", f5);
+    }
+
+
+    /***********************************************************************************************/
+
+
+
+
+
+
+
+
 
 
 
@@ -1605,7 +2819,12 @@ private:
     void printResponseData(UCHAR response[], int LBA_flag, wchar_t text[])
     {
 
+
+
         wprintf(L"RETURNED STATUS: \n");
+
+
+        // TODO: uredi, ker ene komande rabijo razlago vrednosti in ne errorje npr. EXECUTE DEVICE DIAGNOSTIC
         wprintf(L"ERROR: 0x%02X\n", response[0]);
         wprintf(L"\tIllegal length indicator: %s\n", (((response[0]) >> 0) & 1) == 1 ? L"TRUE" : L"FALSE");
         wprintf(L"\tEnd of media: %s\n", (((response[0]) >> 1) & 1) == 1 ? L"TRUE" : L"FALSE");
@@ -1613,6 +2832,12 @@ private:
         wprintf(L"\tID not found: %s\n", (((response[0]) >> 4) & 1) == 1 ? L"TRUE" : L"FALSE");
         wprintf(L"\tUncorrectable: %s\n", (((response[0]) >> 6) & 1) == 1 ? L"TRUE" : L"FALSE");
         wprintf(L"\tInterface CRC: %s\n", (((response[0]) >> 7) & 1) == 1 ? L"TRUE" : L"FALSE");
+
+
+        
+        // TODO: uredi ker ene ATA komande rabijo to:
+        wprintf(L"COUNT: 0x%02X\n", response[1]);
+
 
 
         wprintf(L"DEVICE: 0x%02X\n", response[5]);
@@ -1632,6 +2857,9 @@ private:
         if (LBA_flag == 1)
         {
             wprintf(L"LBA [%s]: 0x%X%X%X\n", text, response[2], response[3], response[4]);
+            // TODO: uredi primerno, ker eni rabijo od 2 - 4, eni pa od 4 - 2
+            // TODO: dodaj se za print kaj pomeni vrednost
+
         }
 
         wprintf(L"\n");
