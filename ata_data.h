@@ -706,6 +706,22 @@ typedef struct
 /* LOGS and STATISTICS*/
 
 // General Purpose Log Directory (GPL Log Address 00h)
+
+typedef struct
+{
+    struct
+    {
+        unsigned __int64 q1 : 16;
+        unsigned __int64 q2 : 8;
+        unsigned __int64 q3 : 40;
+    } Device_Statistics_Information_Header;
+
+    BYTE Number_of_entries_n_in_the_following_list;
+    
+    BYTE Log_page_number[503];
+
+} LIST_OF_SUPPORTED_LOGS;
+
 typedef struct
 {
     struct                                      // BYTE 0 - 7
@@ -1339,7 +1355,34 @@ typedef struct
 
 } TRANSPORT_STATISTICS;
 
+typedef struct
+{
+    struct
+    {
+        unsigned __int64 q1 : 16;
+        unsigned __int64 q2 : 8;
+        unsigned __int64 q3 : 40;
+    } Device_Statistics_Information_Header;
 
+    struct
+    {
+        unsigned __int64 q0 : 8;
+
+        unsigned __int64 r0 : 48;
+
+        unsigned __int64 a0 : 1;
+        unsigned __int64 a1 : 1;
+        unsigned __int64 a2 : 1;
+        unsigned __int64 a3 : 1;
+        unsigned __int64 a4 : 1;
+        unsigned __int64 a5 : 1;
+        unsigned __int64 a6 : 1;
+        unsigned __int64 a7 : 1;
+    } Current_Temperature;
+
+    unsigned __int64 reserved[62];
+
+} SOLID_STATE_DEVICE_STATISTICS;
 
 
 
